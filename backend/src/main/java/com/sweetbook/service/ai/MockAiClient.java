@@ -39,8 +39,9 @@ public class MockAiClient implements AiClient {
                     + "두 눈을 깜빡깜빡, 처음 보는 세상이 신기했답니다.",
                 subject + "이 종이에서 걸어 나오는 장면, " + firstCue + " 배경"),
             new StoryDraft.PageDraft(3,
-                subject + "은 용기를 내어 " + prompt + " "
-                    + "발걸음이 떨렸지만 가슴은 두근두근 뛰었어요.",
+                subject + "은 용기를 내어 한 걸음 두 걸음 나아갔어요. "
+                    + "발걸음은 살짝 떨렸지만 가슴은 두근두근 뛰었답니다. "
+                    + "처음 만나는 풍경이 반짝반짝 빛났어요.",
                 subject + "이 모험을 시작하는 장면"),
             new StoryDraft.PageDraft(4,
                 "그러다 " + subject + "은 " + childName + "이를 다시 만났어요. "

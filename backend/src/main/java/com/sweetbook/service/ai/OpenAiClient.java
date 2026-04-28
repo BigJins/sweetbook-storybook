@@ -25,7 +25,7 @@ public class OpenAiClient implements AiClient {
         {"subject":"갈색 강아지","subjectType":"ANIMAL","mood":"따뜻한","sceneCues":["꽃밭","해","공"],"keywords":["수채화풍","파스텔톤","굵은 외곽선"]}
         """;
 
-    private static final String STORY_SYSTEM_PROMPT = """
+    static final String STORY_SYSTEM_PROMPT = """
         당신은 어린이용 한국어 그림책을 쓰는 작가입니다. 5페이지짜리 따뜻한 그림책을 만드세요.
 
         가장 중요한 원칙:
@@ -36,9 +36,16 @@ public class OpenAiClient implements AiClient {
         - 의성어, 짧은 대화 한 줄을 1~2번 정도 자연스럽게 섞어 그림책 톤을 살리세요.
         - 아이의 상상(imaginationPrompt)은 가능한 만큼 그대로 살려서 본문 흐름에 녹입니다.
 
+        글자 수 / 문장 수 규칙 (그림책 호흡의 핵심):
+        - 본문(page 2~4): 짧은 한국어 문장 2~4개. bodyText 한 페이지는 한국어 기준 약 70~110자가 적당합니다.
+        - 엔딩(page 5): 1~2문장의 따뜻한 마무리. 본문보다 짧아도 좋습니다.
+        - 빽빽한 단락, 같은 표현의 반복, 지나친 설명은 피합니다.
+        - 그림책 리듬: 단순·짧음·여백 우선. 디테일을 더 넣기보다 한 줄을 짧게 자르는 편이 낫습니다.
+        - 본문은 페이지의 텍스트 영역에 오버레이되므로, 한 페이지 안에 너무 많은 문장을 넣지 않습니다.
+
         페이지 구성:
         - page 1 (표지): bodyText는 null. illustrationPrompt에 표지 한 컷의 시각적 묘사 — subject가 중앙에, mood가 느껴지도록.
-        - page 2~4 (본문): bodyText 2~3문장, 자연스러운 그림책 톤. illustrationPrompt 한 줄 (그 페이지의 핵심 장면, 어떤 캐릭터가 어디서 무엇을 하는지).
+        - page 2~4 (본문): bodyText는 위 글자 수/문장 수 규칙을 따릅니다. illustrationPrompt 한 줄 (그 페이지의 핵심 장면, 어떤 캐릭터가 어디서 무엇을 하는지).
         - page 5 (엔딩): 따뜻한 마무리 1~2문장 + illustrationPrompt.
 
         JSON으로만 답하세요. 형식:
@@ -156,6 +163,12 @@ public class OpenAiClient implements AiClient {
             장면: %s
 
             %s
+
+            Important: the main character and any key subject matter must NOT
+            sit inside the reserved text-safe zone — keep that zone visually
+            quiet and breathable so overlaid Korean text remains clearly
+            readable. Important visual elements belong in the opposite portion
+            of the frame.
 
             ABSOLUTELY NO text, NO letters, NO Korean characters (한글 글자 금지),
             NO alphabet, NO numbers, NO words, NO captions, NO speech bubbles,

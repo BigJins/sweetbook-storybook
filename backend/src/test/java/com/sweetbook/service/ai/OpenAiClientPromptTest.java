@@ -97,4 +97,33 @@ class OpenAiClientPromptTest {
         // Default to SPLIT framing if layout is null
         assertTrue(p.contains("INTERIOR") || p.contains("body-text-safe"));
     }
+
+    @Test
+    void illustrationPromptForbidsSubjectInsideTextSafeZone() {
+        String p = OpenAiClient.buildIllustrationPrompt("장면", style, PageLayout.SPLIT);
+        assertTrue(p.contains("must NOT") && p.contains("text-safe zone"),
+            "must explicitly forbid subject sitting inside the text-safe zone");
+        assertTrue(p.contains("opposite portion") || p.contains("opposite side"),
+            "should redirect important elements to the opposite portion");
+    }
+
+    @Test
+    void storySystemPromptIncludesTextLengthRules() {
+        String p = OpenAiClient.STORY_SYSTEM_PROMPT;
+
+        assertTrue(p.contains("70~110"),
+            "should specify ~70-110 char range per body page");
+        assertTrue(p.contains("2~4"),
+            "should specify 2-4 sentences per body page");
+        assertTrue(p.contains("1~2문장"),
+            "should specify 1-2 sentence ending");
+        assertTrue(p.contains("반복"),
+            "should warn against repeated phrasing");
+        assertTrue(p.contains("리듬") || p.contains("호흡"),
+            "should mention picture-book rhythm/breath");
+        assertTrue(p.contains("짧"),
+            "should prefer shorter writing");
+        assertTrue(p.contains("오버레이"),
+            "should mention text is overlaid by the layout system");
+    }
 }

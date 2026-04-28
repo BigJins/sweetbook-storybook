@@ -93,4 +93,34 @@ class MockAiClientTest {
             "should fall back to '그림 속 주인공' when subject missing: "
                 + cover.illustrationPrompt());
     }
+
+    @Test
+    void bodyPagesHaveTwoToFourSentences() {
+        StyleDescriptor style = new StyleDescriptor(
+            List.of("수채화풍"), "갈색 강아지", "ANIMAL", "따뜻한", List.of("공원"));
+        StoryDraft draft = ai.generateStory("서아", "공원에서 함께 놀았어요", style);
+
+        for (int n = 2; n <= 4; n++) {
+            StoryDraft.PageDraft page = draft.pages().get(n - 1);
+            long sentenceCount = countSentences(page.bodyText());
+            assertTrue(sentenceCount >= 2 && sentenceCount <= 4,
+                "page " + n + " should have 2-4 sentences, got " + sentenceCount
+                    + " in: " + page.bodyText());
+        }
+    }
+
+    @Test
+    void endingPageHasOneOrTwoSentences() {
+        StyleDescriptor style = new StyleDescriptor(
+            List.of("수채화풍"), "갈색 강아지", "ANIMAL", "따뜻한", List.of("공원"));
+        StoryDraft draft = ai.generateStory("서아", "공원에서", style);
+
+        long sentenceCount = countSentences(draft.pages().get(4).bodyText());
+        assertTrue(sentenceCount >= 1 && sentenceCount <= 2,
+            "ending should have 1-2 sentences, got " + sentenceCount);
+    }
+
+    private long countSentences(String text) {
+        return text.chars().filter(c -> c == '.' || c == '!' || c == '?').count();
+    }
 }
