@@ -8,9 +8,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -54,5 +59,18 @@ class OrderControllerTest {
                 .content("{\"status\":\"PENDING\"}"))
             .andExpect(status().isConflict())
             .andExpect(jsonPath("$.error").value("INVALID_TRANSITION"));
+    }
+
+    @Test
+    void exportEndpointReturnsZip() throws Exception {
+        var mvcResult = mvc.perform(get("/api/orders/seed-order-1/export"))
+            .andExpect(request().asyncStarted())
+            .andReturn();
+
+        mvc.perform(asyncDispatch(mvcResult))
+            .andExpect(status().isOk())
+            .andExpect(header().string("Content-Type", "application/zip"))
+            .andExpect(header().string("Content-Disposition",
+                containsString("order-seed-order-1.zip")));
     }
 }
