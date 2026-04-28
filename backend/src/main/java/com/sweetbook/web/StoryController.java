@@ -1,6 +1,7 @@
 package com.sweetbook.web;
 
 import com.sweetbook.domain.story.Story;
+import com.sweetbook.service.StoryGenerationService;
 import com.sweetbook.service.StoryService;
 import com.sweetbook.web.dto.PageBodyUpdateRequest;
 import com.sweetbook.web.dto.StoryCreateRequest;
@@ -27,9 +28,11 @@ import java.util.Map;
 public class StoryController {
 
     private final StoryService storyService;
+    private final StoryGenerationService generationService;
 
-    public StoryController(StoryService storyService) {
+    public StoryController(StoryService storyService, StoryGenerationService generationService) {
         this.storyService = storyService;
+        this.generationService = generationService;
     }
 
     @GetMapping
@@ -59,6 +62,18 @@ public class StoryController {
         @Valid @RequestBody PageBodyUpdateRequest req
     ) {
         storyService.updatePageBody(id, n, req.bodyText());
+        return Map.of("ok", true);
+    }
+
+    @PostMapping("/{id}/pages/{n}/regenerate")
+    public Map<String, Boolean> regenerate(@PathVariable String id, @PathVariable int n) {
+        generationService.regeneratePage(id, n);
+        return Map.of("ok", true);
+    }
+
+    @PostMapping("/{id}/retry")
+    public Map<String, Boolean> retry(@PathVariable String id) {
+        generationService.retry(id);
         return Map.of("ok", true);
     }
 }
