@@ -11,6 +11,7 @@ import com.sweetbook.service.ai.StoryDraft;
 import com.sweetbook.service.ai.StyleDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.Executor;
 
 @Service
 public class StoryGenerationService {
@@ -33,16 +35,19 @@ public class StoryGenerationService {
     private final PageRepository pages;
     private final FileStorageService storage;
     private final AiClient ai;
+    private final Executor storyExecutor;
     private final ObjectMapper om = new ObjectMapper();
 
     public StoryGenerationService(StoryRepository stories,
                                   PageRepository pages,
                                   FileStorageService storage,
-                                  AiClient ai) {
+                                  AiClient ai,
+                                  @Qualifier("storyExecutor") Executor storyExecutor) {
         this.stories = stories;
         this.pages = pages;
         this.storage = storage;
         this.ai = ai;
+        this.storyExecutor = storyExecutor;
     }
 
     @Async("storyExecutor")
@@ -108,7 +113,7 @@ public class StoryGenerationService {
         Story fresh = loadOrThrow(storyId);
         fresh.retry();
         stories.save(fresh);
-        generate(storyId);
+        storyExecutor.execute(() -> generate(storyId));
     }
 
     @Transactional
