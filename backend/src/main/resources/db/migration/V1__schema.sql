@@ -1,5 +1,5 @@
 CREATE TABLE story (
-  id                 CHAR(36)     PRIMARY KEY,
+  id                 VARCHAR(36)  PRIMARY KEY,
   title              VARCHAR(120) NOT NULL DEFAULT '',
   child_name         VARCHAR(20)  NOT NULL,
   status             VARCHAR(32)  NOT NULL,
@@ -13,8 +13,8 @@ CREATE TABLE story (
 );
 
 CREATE TABLE page (
-  id                  CHAR(36)    PRIMARY KEY,
-  story_id            CHAR(36)    NOT NULL,
+  id                  VARCHAR(36)  PRIMARY KEY,
+  story_id            VARCHAR(36)  NOT NULL,
   page_number         INT         NOT NULL,
   layout              VARCHAR(16) NOT NULL,
   body_text           TEXT        NULL,
@@ -25,8 +25,8 @@ CREATE TABLE page (
 );
 
 CREATE TABLE orders (
-  id              CHAR(36)    PRIMARY KEY,
-  story_id        CHAR(36)    NOT NULL,
+  id              VARCHAR(36) PRIMARY KEY,
+  story_id        VARCHAR(36) NOT NULL,
   recipient_name  VARCHAR(30) NOT NULL,
   address_memo    TEXT        NULL,
   status          VARCHAR(16) NOT NULL,
@@ -39,8 +39,8 @@ CREATE TABLE orders (
 );
 
 CREATE TABLE order_item (
-  id          CHAR(36)   PRIMARY KEY,
-  order_id    CHAR(36)   NOT NULL,
+  id          VARCHAR(36) PRIMARY KEY,
+  order_id    VARCHAR(36) NOT NULL,
   book_size   VARCHAR(8) NOT NULL,
   cover_type  VARCHAR(8) NOT NULL,
   copies      INT        NOT NULL,
