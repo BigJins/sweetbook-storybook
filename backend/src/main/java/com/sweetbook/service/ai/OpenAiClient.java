@@ -2,6 +2,7 @@ package com.sweetbook.service.ai;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sweetbook.domain.story.PageLayout;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Base64;
@@ -127,25 +128,8 @@ public class OpenAiClient implements AiClient {
     }
 
     @Override
-    public byte[] generateIllustration(String prompt, StyleDescriptor style) {
-        String fullPrompt = """
-            스타일 키워드: %s
-            주인공: %s (%s)
-            전체 분위기: %s
-            장면 단서: %s
-
-            장면: %s
-
-            어린이 그림책 일러스트, 4:5 세로 비율, 텍스트 없음, 손그림 느낌, 부드러운 색감.
-            주인공이 화면 안에 명확히 보이도록 구성.
-            """.formatted(
-                style.asPromptPrefix(),
-                style.subjectOrFallback(),
-                nullSafe(style.subjectType()),
-                style.moodOrFallback(),
-                String.join(", ", style.sceneCues()),
-                prompt
-            );
+    public byte[] generateIllustration(String prompt, StyleDescriptor style, PageLayout layout) {
+        String fullPrompt = buildIllustrationPrompt(prompt, style, layout);
 
         Map<String, Object> body = Map.of(
             "model", imageModel,
@@ -160,6 +144,63 @@ public class OpenAiClient implements AiClient {
         } catch (Exception e) {
             throw new RuntimeException("IMAGE_PARSE_FAILED", e);
         }
+    }
+
+    static String buildIllustrationPrompt(String scene, StyleDescriptor style, PageLayout layout) {
+        return """
+            스타일 키워드: %s
+            주인공: %s (%s)
+            전체 분위기: %s
+            장면 단서: %s
+
+            장면: %s
+
+            %s
+
+            ABSOLUTELY NO text, NO letters, NO Korean characters (한글 글자 금지),
+            NO alphabet, NO numbers, NO words, NO captions, NO speech bubbles,
+            NO signs, NO signage, NO billboards, NO storefront names, NO book
+            titles inside the picture, NO logos, NO watermarks, NO signatures,
+            NO labels, NO writing of any kind anywhere in the image.
+            The illustration must be entirely wordless — text will be overlaid
+            by the layout system afterwards, so the image itself must contain
+            zero typography.
+
+            형식: 4:5 세로 비율, 어린이 그림책 일러스트, 손그림 느낌, 부드러운 색감,
+            주인공이 화면 안에 명확히 보이도록 구성.
+            """.formatted(
+                style.asPromptPrefix(),
+                style.subjectOrFallback(),
+                nullSafe(style.subjectType()),
+                style.moodOrFallback(),
+                String.join(", ", style.sceneCues()),
+                scene,
+                textSafeAreaInstruction(layout == null ? PageLayout.SPLIT : layout)
+            );
+    }
+
+    private static String textSafeAreaInstruction(PageLayout layout) {
+        return switch (layout) {
+            case COVER -> """
+                Composition: picture-book COVER. Reserve a calm, uncluttered area
+                in the upper third OR lower third of the frame (about 25–30%% of
+                the canvas) as a title-safe zone — keep it visually quiet so a
+                title can be placed there afterwards. The main character stays
+                clearly visible in the remaining area, ideally centered.""";
+            case SPLIT -> """
+                Composition: picture-book INTERIOR spread. Reserve a clean,
+                low-detail area on the right side OR the lower third of the frame
+                (about 30–35%% of the canvas) as a body-text-safe zone — keep
+                that region soft and uncluttered (open sky, water, ground,
+                gentle gradient, etc.) so 2–3 lines of body text can be overlaid
+                there afterwards. Keep the main character on the opposite side
+                or upper portion, clearly readable.""";
+            case ENDING -> """
+                Composition: picture-book CLOSING scene. Calm, breathable
+                composition with generous open negative space toward the lower
+                or center-bottom (about 30%% of the canvas) for one final line
+                of text. The mood is restful and resolved.""";
+        };
     }
 
     private static String nullSafe(String s) {

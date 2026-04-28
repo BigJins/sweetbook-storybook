@@ -81,7 +81,7 @@ public class StoryGenerationService {
         Page page = pages.findByStoryIdAndPageNumber(storyId, pageNumber)
             .orElseThrow(() -> new NoSuchElementException("PAGE_NOT_FOUND"));
         try {
-            byte[] bytes = ai.generateIllustration(page.getIllustrationPrompt(), style);
+            byte[] bytes = ai.generateIllustration(page.getIllustrationPrompt(), style, page.getLayout());
             String path = storage.saveIllustration(storyId, pageNumber, bytes);
             page.setIllustrationUrl(path);
             pages.save(page);

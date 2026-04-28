@@ -1,5 +1,6 @@
 package com.sweetbook.service.ai;
 
+import com.sweetbook.domain.story.PageLayout;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
@@ -53,7 +54,7 @@ public class MockAiClient implements AiClient {
     }
 
     @Override
-    public byte[] generateIllustration(String prompt, StyleDescriptor style) {
+    public byte[] generateIllustration(String prompt, StyleDescriptor style, PageLayout layout) {
         sleep(600);
         try (InputStream in = new ClassPathResource("seed/placeholder.png").getInputStream()) {
             return in.readAllBytes();
