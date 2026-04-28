@@ -23,11 +23,16 @@ public class StoryService {
     private final StoryRepository stories;
     private final PageRepository pages;
     private final FileStorageService storage;
+    private final StoryGenerationService generationService;
 
-    public StoryService(StoryRepository stories, PageRepository pages, FileStorageService storage) {
+    public StoryService(StoryRepository stories,
+                        PageRepository pages,
+                        FileStorageService storage,
+                        StoryGenerationService generationService) {
         this.stories = stories;
         this.pages = pages;
         this.storage = storage;
+        this.generationService = generationService;
     }
 
     @Transactional
@@ -42,7 +47,7 @@ public class StoryService {
     }
 
     public void kickOffAsyncGeneration(String storyId) {
-        // Phase 3 (Task 18) wires this to StoryGenerationService.generate
+        generationService.generate(storyId);
     }
 
     @Transactional
