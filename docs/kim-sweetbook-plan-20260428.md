@@ -2596,6 +2596,7 @@ export interface Order {
   story: { id: string; title: string; coverUrl: string | null };
   status: OrderStatus;
   recipientName: string;
+  addressMemo: string | null;
   item: OrderItem;
   createdAt: string;
 }
