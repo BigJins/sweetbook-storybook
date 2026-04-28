@@ -2,6 +2,14 @@
 
 이 프로젝트는 **Strategy B + 옵션 2**로 작업을 격리합니다 — main + feature 워크트리 2개. 헥사고날·DDD 같은 무거운 구조 변경 없이, 패키지 경계만 가볍게 정리하고 작업 트랙만 분리합니다.
 
+> **셸 가정**: 이 문서의 모든 명령·경로 예시는 **Git Bash**(또는 macOS/Linux bash) 기준입니다. PowerShell·cmd 사용자는 다음을 변환:
+> - 경로 `/c/dev/sweetbook-storybook` → `C:\dev\sweetbook-storybook`
+> - `./mvnw` → `.\mvnw.cmd`
+> - `&&` → `;` (PowerShell 5.1) 또는 그대로 (PowerShell 7+)
+> - `cp` → `Copy-Item`, `rm` → `Remove-Item` 등 명령어 변환
+>
+> 본 프로젝트는 Windows + Git Bash 환경에서 부트스트랩됨. 같은 환경 사용을 권장.
+
 ## 워크트리 토폴로지
 
 | 경로 | 브랜치 | 담당 phase | 주 작업 |

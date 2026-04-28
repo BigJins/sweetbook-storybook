@@ -6,7 +6,7 @@
 
 **Architecture:** Spring Boot 3 (Java 21) + JPA/MySQL이 단일 JAR로 Vue 빌드 산출물까지 정적 서빙. AI 호출은 클라이언트 인터페이스로 추상화해 mock 모드 fallback. 이미지는 파일시스템(Docker 볼륨), DB는 path만 저장. Story 생성은 `@Async` + 클라이언트 폴링.
 
-**Tech Stack:** Spring Boot 3.3, Java 21, JPA + Flyway + MySQL 8, Vite + Vue 3 + TypeScript + Tailwind, Docker Compose, OpenAI API (GPT-4o Vision / GPT-4o-mini / gpt-image-1).
+**Tech Stack:** Spring Boot 3.5, Java 21, JPA + Flyway + MySQL 8, Vite + Vue 3 + TypeScript + Tailwind, Docker Compose, OpenAI API (GPT-4o Vision / GPT-4o-mini / gpt-image-1).
 
 ---
 
@@ -58,6 +58,16 @@
 - phase별 매핑·머지 케이던스·DTO 컨벤션 동기화 규칙은 `docs/WORKTREES.md`에 명시.
 
 **참조**: 모든 결정은 `kim-sweetbook-design-20260428.md`에 박혀 있음. 의문 생기면 그 문서를 truth source로.
+
+**셸 가정 (Windows 환경 기준)**
+
+- 본 plan의 모든 `bash` 코드 블록은 **Git Bash**(또는 macOS/Linux 기본 bash)에서 실행되도록 작성됨. 경로는 `/c/dev/...` 형태 사용.
+- PowerShell·cmd에서 실행 시 다음 변환 필요:
+  - `./mvnw` → `.\mvnw.cmd`
+  - `&&` (PS 5.1) → `;` 또는 `; if ($?) { ... }`
+  - 경로: `/c/dev/sweetbook-storybook` → `C:\dev\sweetbook-storybook`
+  - 환경변수: `${VAR}` → `$env:VAR` (PS) / `%VAR%` (cmd)
+- 시스템 Maven 미설치 가정 → 모든 maven 명령은 `./mvnw`로 실행. Dockerfile 내부의 `mvn`은 `maven:...` 베이스 이미지에 포함된 시스템 mvn이라 별도 wrapper 불필요.
 
 ---
 
@@ -349,7 +359,7 @@ logging:
 
 - [ ] **Step 5:** 컴파일 확인
 
-Run: `cd backend && mvn -DskipTests compile`
+Run: `cd backend && ./mvnw -DskipTests compile`
 Expected: `BUILD SUCCESS`
 
 - [ ] **Step 6:** Commit
@@ -357,7 +367,7 @@ Expected: `BUILD SUCCESS`
 ```bash
 git init
 git add .gitignore backend/pom.xml backend/src/main/java/com/sweetbook/SweetbookApplication.java backend/src/main/resources/application.yml
-git commit -m "chore: spring boot 3.3 + java 21 scaffold"
+git commit -m "chore: spring boot 3.5 + java 21 scaffold"
 ```
 
 ---
@@ -827,7 +837,7 @@ class OrderStatusTransitionTest {
 
 - [ ] **Step 3:** 테스트 실행 → PASS 확인 (Task 5의 enum이 이미 구현됨)
 
-Run: `cd backend && mvn -Dtest='StoryStatusTransitionTest,OrderStatusTransitionTest' test`
+Run: `cd backend && ./mvnw -Dtest='StoryStatusTransitionTest,OrderStatusTransitionTest' test`
 Expected: `BUILD SUCCESS`, 9 tests passed.
 
 - [ ] **Step 4:** Commit
@@ -1084,7 +1094,7 @@ public class OrderItem {
 
 - [ ] **Step 5:** 컴파일 확인
 
-Run: `cd backend && mvn -DskipTests compile`
+Run: `cd backend && ./mvnw -DskipTests compile`
 Expected: `BUILD SUCCESS`
 
 - [ ] **Step 6:** Commit
@@ -1207,7 +1217,7 @@ class FileStorageServiceTest {
 
 - [ ] **Step 2:** 테스트 실행 → FAIL 확인
 
-Run: `cd backend && mvn -Dtest=FileStorageServiceTest test`
+Run: `cd backend && ./mvnw -Dtest=FileStorageServiceTest test`
 Expected: compilation error (FileStorageService not found)
 
 - [ ] **Step 3:** 구현
@@ -1268,7 +1278,7 @@ public class FileStorageService {
 
 - [ ] **Step 4:** 테스트 실행 → PASS
 
-Run: `cd backend && mvn -Dtest=FileStorageServiceTest test`
+Run: `cd backend && ./mvnw -Dtest=FileStorageServiceTest test`
 Expected: 4 tests passed.
 
 - [ ] **Step 5:** Commit
@@ -1396,7 +1406,7 @@ class SpaFallbackTest {
 
 - [ ] **Step 3:** 테스트 실행
 
-Run: `cd backend && mvn -Dtest=SpaFallbackTest test`
+Run: `cd backend && ./mvnw -Dtest=SpaFallbackTest test`
 Expected: 5 tests passed.
 
 - [ ] **Step 4:** Commit
@@ -1739,7 +1749,7 @@ class StoryControllerListTest {
 
 - [ ] **Step 5:** 테스트 실행 → PASS
 
-Run: `cd backend && mvn -Dtest=StoryControllerListTest test`
+Run: `cd backend && ./mvnw -Dtest=StoryControllerListTest test`
 Expected: 2 tests passed.
 
 - [ ] **Step 6:** Commit
@@ -1903,7 +1913,7 @@ void rejectsGifImage() throws Exception {
 
 - [ ] **Step 6:** 테스트 통과 확인
 
-Run: `cd backend && mvn -Dtest=StoryControllerCreateTest test`
+Run: `cd backend && ./mvnw -Dtest=StoryControllerCreateTest test`
 
 - [ ] **Step 7:** Commit
 
@@ -2903,7 +2913,7 @@ onUnmounted(() => { if (pollTimer) clearInterval(pollTimer); });
 
 - [ ] **Step 4:** 브라우저 검증
 
-Run: 백엔드 `cd backend && mvn spring-boot:run` (별도 터미널) + 프론트 `cd frontend && npm run dev` → http://localhost:5173 접속.
+Run: 백엔드 `cd backend && ./mvnw spring-boot:run` (별도 터미널) + 프론트 `cd frontend && npm run dev` → http://localhost:5173 접속.
 Expected: 시드 4편 카드 그리드.
 
 - [ ] **Step 5:** Commit
@@ -4265,7 +4275,7 @@ public class ZipExportService {
 
 - [ ] **Step 3:** 테스트 통과 확인
 
-Run: `cd backend && mvn -Dtest=ZipExportServiceTest test`
+Run: `cd backend && ./mvnw -Dtest=ZipExportServiceTest test`
 Expected: 2 tests passed.
 
 - [ ] **Step 4:** Commit
@@ -4608,7 +4618,7 @@ class StoryCreateSmokeTest {
 
 - [ ] **Step 4:** 전체 테스트 실행
 
-Run: `cd backend && mvn test`
+Run: `cd backend && ./mvnw test`
 Expected: 모든 테스트 PASS. StoryCreateSmokeTest는 약 3-5초 소요.
 
 - [ ] **Step 5:** Commit
@@ -4781,7 +4791,7 @@ AI_MOCK_MODE=false
 
 ## 4. 기술 스택
 
-- **백엔드**: Spring Boot 3.3 / Java 21 / JPA / Flyway / MySQL 8 / WebClient (OpenAI)
+- **백엔드**: Spring Boot 3.5 / Java 21 / JPA / Flyway / MySQL 8 / WebClient (OpenAI)
 - **프론트엔드**: Vue 3 + Vite + TypeScript + Tailwind CSS + Vue Router
 - **인프라**: Docker Compose (multi-stage Dockerfile, 단일 컨테이너에 백엔드+프론트엔드 정적 자산)
 - **이미지 저장**: 파일시스템 + Docker 볼륨 (`./uploads:/data/uploads`)
