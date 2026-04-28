@@ -13,24 +13,35 @@ function onInput(e: Event) {
 </script>
 
 <template>
-  <div class="flex w-[680px] md:w-[800px] aspect-[3/2]">
-    <div class="flex-1 bg-gradient-to-br from-pink-200 to-violet-200 flex items-center justify-center">
-      <img v-if="illustrationUrl" :src="illustrationUrl" class="w-full h-full object-cover" />
-      <div v-else class="text-center text-gray-500">
-        <div class="text-4xl">⚠️</div>
-        <div class="text-sm mt-2">일러스트 실패</div>
-      </div>
+  <div class="relative w-[320px] sm:w-[380px] md:w-[420px] aspect-[3/4] bg-gradient-to-br from-pink-200 to-violet-200 overflow-hidden">
+    <!-- full-bleed illustration -->
+    <img v-if="illustrationUrl" :src="illustrationUrl" class="absolute inset-0 w-full h-full object-cover" />
+    <div v-else class="absolute inset-x-0 top-0 h-3/5 flex flex-col items-center justify-center text-gray-500">
+      <div class="text-5xl">⚠️</div>
+      <div class="text-sm mt-2">일러스트 실패</div>
     </div>
-    <div class="flex-1 bg-amber-50 p-8 md:p-10 flex flex-col justify-between">
-      <div>
-        <div class="text-xs uppercase font-bold tracking-wide text-gray-400">Page {{ pageNumber }}</div>
+
+    <!-- subtle top scrim -->
+    <div class="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-black/15 to-transparent pointer-events-none" />
+
+    <!-- page badge -->
+    <div class="absolute top-3 left-3 text-[11px] uppercase tracking-[0.18em] bg-black/45 text-white/95 rounded-full px-3 py-1 font-semibold backdrop-blur-sm">
+      Page {{ pageNumber }}
+    </div>
+
+    <!-- regenerate chip -->
+    <button v-if="editable"
+            class="absolute top-3 right-3 bg-white/92 backdrop-blur-sm text-sm font-semibold px-3 py-1.5 rounded-full shadow-md hover:bg-white transition"
+            @click="$emit('regenerate')">🔄 재생성</button>
+
+    <!-- vellum body card, bottom-anchored -->
+    <div class="absolute inset-x-4 bottom-4 bg-gradient-to-b from-white/96 to-amber-50/92 backdrop-blur-md rounded-2xl shadow-xl border border-white/70 max-h-[58%]">
+      <div class="px-6 py-5 max-h-full overflow-y-auto">
         <textarea v-if="editable" :value="bodyText ?? ''" @input="onInput"
-                  class="mt-4 w-full h-40 bg-transparent text-base md:text-lg leading-loose resize-none focus:outline-none focus:bg-white rounded-lg p-2"
+                  rows="3"
+                  class="w-full bg-transparent text-base md:text-lg leading-loose text-gray-800 break-keep resize-none focus:outline-none focus:bg-white/40 rounded-md transition"
                   placeholder="페이지 본문..." />
-        <p v-else class="mt-4 text-base md:text-lg leading-loose text-gray-800">{{ bodyText }}</p>
-      </div>
-      <div class="flex gap-2 mt-4">
-        <button class="text-sm font-semibold px-4 py-2 border rounded-lg bg-white hover:bg-gray-50 transition" @click="$emit('regenerate')">🔄 재생성</button>
+        <p v-else class="text-base md:text-lg leading-loose text-gray-800 break-keep">{{ bodyText }}</p>
       </div>
     </div>
   </div>

@@ -80,8 +80,8 @@ onMounted(start);
 
     <template v-else-if="isCompleted && story">
       <BeforeAfterStrip :drawing-url="story.drawingUrl" :style-descriptor="styleKeywords" />
-      <div class="p-8">
-        <BookViewer :pages="story.pages" :title="story.title"
+      <div class="p-6 md:p-8">
+        <BookViewer :pages="story.pages" :title="story.title" :child-name="story.childName"
                     @update:page-body="onPageBodyUpdate" @regenerate="onRegenerate" />
       </div>
     </template>
