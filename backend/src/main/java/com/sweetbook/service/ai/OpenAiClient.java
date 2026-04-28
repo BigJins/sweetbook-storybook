@@ -165,10 +165,11 @@ public class OpenAiClient implements AiClient {
             %s
 
             Important: the main character and any key subject matter must NOT
-            sit inside the reserved text-safe zone — keep that zone visually
-            quiet and breathable so overlaid Korean text remains clearly
-            readable. Important visual elements belong in the opposite portion
-            of the frame.
+            sit inside the reserved text-safe zone — that zone is the page
+            margin / calm area where the layout system will overlay Korean
+            text. Keep it visually quiet and breathable. Important visual
+            elements belong in the opposite portion of the frame, never on
+            top of where the text will land.
 
             ABSOLUTELY NO text, NO letters, NO Korean characters (한글 글자 금지),
             NO alphabet, NO numbers, NO words, NO captions, NO speech bubbles,
@@ -195,24 +196,40 @@ public class OpenAiClient implements AiClient {
     private static String textSafeAreaInstruction(PageLayout layout) {
         return switch (layout) {
             case COVER -> """
-                Composition: picture-book COVER. Reserve a calm, uncluttered area
-                in the upper third OR lower third of the frame (about 25–30%% of
-                the canvas) as a title-safe zone — keep it visually quiet so a
-                title can be placed there afterwards. The main character stays
-                clearly visible in the remaining area, ideally centered.""";
+                Composition: picture-book COVER, framed as a SINGLE FRONT PAGE
+                (not a two-page spread — this is the closed cover view).
+                Reserve a calm, uncluttered band in the upper third OR lower
+                third of the frame (about 25–30%% of the canvas) as a
+                title-safe zone — keep it visually quiet so a title can be
+                placed there afterwards. The main character stays clearly
+                visible in the remaining area, ideally centered.""";
             case SPLIT -> """
-                Composition: picture-book INTERIOR spread. Reserve a clean,
-                low-detail area on the right side OR the lower third of the frame
-                (about 30–35%% of the canvas) as a body-text-safe zone — keep
-                that region soft and uncluttered (open sky, water, ground,
-                gentle gradient, etc.) so 2–3 lines of body text can be overlaid
-                there afterwards. Keep the main character on the opposite side
-                or upper portion, clearly readable.""";
+                Composition: picture-book INTERIOR scene, framed as ONE SIDE
+                of an OPEN-BOOK SPREAD. Imagine the final layout — this image
+                will sit alongside a companion page inside an opened picture
+                book, so the viewer reads it as a half-spread.
+
+                Visual weight on ONE side (left OR upper area, your choice):
+                place the main character there with clear silhouette and
+                color, fully visible, and DO NOT crop the subject at the
+                inner edge.
+
+                Calm page-margin area on the OPPOSITE side (right side OR
+                lower third, about 30–35%% of the canvas) — that region is
+                the body-text-safe zone. Keep it soft and uncluttered (open
+                sky, water, ground, distant landscape, gentle gradient, fog)
+                so 2–4 lines of overlaid Korean body text remain easily
+                readable in the page margin. No important subject matter
+                inside that margin area.""";
             case ENDING -> """
-                Composition: picture-book CLOSING scene. Calm, breathable
-                composition with generous open negative space toward the lower
-                or center-bottom (about 30%% of the canvas) for one final line
-                of text. The mood is restful and resolved.""";
+                Composition: picture-book CLOSING scene, also framed as ONE
+                SIDE of the OPEN-BOOK SPREAD. Calm, breathable composition
+                with generous open negative space in the lower or center-
+                bottom region (about 30%% of the canvas) reserved as the
+                page-margin text-safe zone for one final line. The main
+                subject sits softly in the upper or central portion — never
+                in the lower margin where the closing text will be overlaid.
+                Tone is restful and resolved.""";
         };
     }
 

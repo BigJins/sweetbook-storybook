@@ -108,6 +108,54 @@ class OpenAiClientPromptTest {
     }
 
     @Test
+    void coverPromptIsSinglePageNotSpread() {
+        String cover = squish(OpenAiClient.buildIllustrationPrompt("표지", style, PageLayout.COVER));
+        assertTrue(cover.contains("SINGLE FRONT PAGE"),
+            "cover must be framed as a single front page");
+        assertTrue(cover.contains("not a two-page spread") || cover.contains("closed cover"),
+            "cover should explicitly contrast itself with a spread");
+    }
+
+    @Test
+    void splitPromptFramesImageAsOneSideOfOpenSpread() {
+        String split = squish(OpenAiClient.buildIllustrationPrompt("본문 장면", style, PageLayout.SPLIT));
+        assertTrue(split.contains("ONE SIDE"),
+            "split prompt must say ONE SIDE: " + split);
+        assertTrue(split.contains("OPEN-BOOK SPREAD"),
+            "split prompt must mention OPEN-BOOK SPREAD: " + split);
+        assertTrue(split.contains("companion page") || split.contains("half-spread"),
+            "split prompt should mention the companion / half-spread context");
+        assertTrue(split.contains("DO NOT crop"),
+            "split prompt must warn against cropping subject at inner edge");
+        assertTrue(split.contains("page-margin") || split.contains("page margin"),
+            "text-safe area should be described as a page margin, not just blank space");
+    }
+
+    @Test
+    void endingPromptFramesImageAsOneSideOfSpread() {
+        String ending = squish(OpenAiClient.buildIllustrationPrompt("엔딩", style, PageLayout.ENDING));
+        assertTrue(ending.contains("ONE SIDE"),
+            "ending prompt should also acknowledge it sits as one side of the spread");
+        assertTrue(ending.contains("page-margin") || ending.contains("page margin"),
+            "ending text-safe area should be called a margin");
+        assertTrue(ending.contains("never in the lower margin"),
+            "ending prompt must say subject doesn't sit in the lower margin");
+    }
+
+    @Test
+    void globalImportantLineMentionsPageMargin() {
+        String p = squish(OpenAiClient.buildIllustrationPrompt("장면", style, PageLayout.SPLIT));
+        assertTrue(p.contains("page margin") || p.contains("page-margin"),
+            "global Important: line should describe the safe zone as a page margin");
+        assertTrue(p.contains("never on top of where the text will land"),
+            "global rule should explicitly forbid placing subject on top of the text area");
+    }
+
+    private static String squish(String s) {
+        return s.replaceAll("\\s+", " ");
+    }
+
+    @Test
     void storySystemPromptIncludesTextLengthRules() {
         String p = OpenAiClient.STORY_SYSTEM_PROMPT;
 
