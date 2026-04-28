@@ -206,13 +206,14 @@ FAILED ───────┘  POST /api/stories/:id/retry로 ANALYZING_DRAWIN
 - 스토리 생성 자체 실패(JSON 파싱 실패 등) 또는 그림 분석 실패 시만 status=FAILED.
 - mock 모드는 각 단계에서 600ms sleep으로 단계 전이 흉내 (데모 임팩트).
 
-**Order.status 전이 (전진만, 후진/스킵 시 400)**
+**Order.status 전이 (전진만, 후진/스킵 시 409 INVALID_TRANSITION)**
 
 ```
 PENDING ──→ PROCESSING ──→ COMPLETED
 ```
 
-- `PATCH /api/orders/:id/status`에서 전이 검증. 위반 시 `{ error: "INVALID_TRANSITION" }`.
+- `PATCH /api/orders/:id/status`에서 전이 검증. 위반 시 HTTP 409 + `{ error: "INVALID_TRANSITION" }`.
+- 409(Conflict)는 "리소스는 존재하지만 현재 상태가 그 작업을 허용하지 않음"이라는 의미라서 400보다 정확. 구현은 `IllegalStateException` → `GlobalExceptionHandler` → `HttpStatus.CONFLICT`.
 - 전이마다 `statusHistory` JSON에 `{ status, ts: ISO8601 }` append.
 
 ### 화면 1 — 메인 (`/`)
@@ -362,7 +363,7 @@ uploads/
 - [ ] 책 미리보기에 3종 레이아웃 (COVER/SPLIT/ENDING) 모두 등장
 - [ ] 페이지별 텍스트 인라인 편집 + 일러스트 재생성 동작
 - [ ] 부분 실패(페이지 1장 일러스트 실패) 시 placeholder + 재생성 버튼 노출, 전체는 COMPLETED
-- [ ] 주문 상태 PENDING → PROCESSING → COMPLETED 전이 동작 (후진 시 400)
+- [ ] 주문 상태 PENDING → PROCESSING → COMPLETED 전이 동작 (후진 시 409 INVALID_TRANSITION)
 - [ ] 주문 ZIP 익스포트 다운로드, 압축 풀어 `metadata.json + story.json + pages/page-NN.{json,png} + drawing.png + style.json` 구조 검증
 - [ ] 입력 유효성: 그림 5MB 초과·이름 21자 초과·상상 9자 이하에서 한국어 에러 메시지 노출
 - [ ] README 보고 처음 보는 사람이 막힘 없이 실행

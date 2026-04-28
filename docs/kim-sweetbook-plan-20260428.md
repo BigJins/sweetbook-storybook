@@ -191,6 +191,12 @@ uploads/                                       # gitignore (런타임 생성)
 
 ## Phase 0 — 프로젝트 스캐폴드 (Hour 0-2)
 
+> **현재 상태 (2026-04-28 18:30 기준)**: Phase 0은 이미 main 브랜치에 적용됨 (commit c50def9). 백엔드는 `start.spring.io` Spring Boot 3.5.0 + Java 21로 부트스트랩, 프론트는 package.json을 직접 작성한 상태로 커밋됨. **node_modules와 maven 의존성은 아직 설치 전.** Task 1~3은 처음부터 다시 만든다고 가정한 절차이며, 실제 실행시에는 이 노트를 참고해 일부 step만 검증용으로 돌리면 됨.
+>
+> **npm install 시점**: WORKTREES.md 정책상 frontend 작업은 `feature/frontend-ui` 워크트리에서만 → `npm install`도 거기서 1회. main 워크스페이스에서 검증 목적으로 install하는 건 선택. Phase 4 시작 전에 `feature/frontend-ui` 워크트리로 이동해 install하는 게 깔끔.
+>
+> **Maven 의존성**: `./mvnw -DskipTests compile`을 main 또는 `feature/backend-ai`에서 1회 실행하면 `~/.m2/repository`에 다운로드 → 모든 워크트리가 공유. 처음 1회만 5-10분 소요.
+
 ### Task 1 — Spring Boot 백엔드 init
 
 **Files:**
@@ -206,10 +212,8 @@ uploads/                                       # gitignore (런타임 생성)
 # Java/Maven
 backend/target/
 *.class
-*.jar
-.mvn/
-mvnw
-mvnw.cmd
+# 단, Maven Wrapper(mvnw, mvnw.cmd, .mvn/wrapper/maven-wrapper.properties)는 git tracked.
+# .mvn/wrapper/maven-wrapper.jar 만 backend/.gitignore에서 제외 (start.spring.io 기본).
 
 # Frontend
 frontend/node_modules/
@@ -225,16 +229,32 @@ frontend/.vite/
 .env
 .env.local
 
-# Runtime
-uploads/
+# Runtime — uploads 디렉토리는 유지(.gitkeep), 내용물은 무시
+uploads/*
 !uploads/.gitkeep
+
+# Worktrees (Strategy B + 옵션 2)
+.worktrees/
 
 # OS
 .DS_Store
 Thumbs.db
 ```
 
-- [ ] **Step 2:** `backend/pom.xml` 작성 (Spring Boot 3.3.4, Java 21)
+**근거**: Maven Wrapper(`mvnw`, `mvnw.cmd`, `.mvn/wrapper/maven-wrapper.properties`)는 repo에 커밋되어 있어야 협업자·CI 환경에서 시스템 mvn 설치 없이 빌드 가능. 이게 wrapper를 만드는 이유. start.spring.io의 backend `.gitignore`는 `.mvn/wrapper/maven-wrapper.jar`(런타임에 받는 바이너리)만 제외하고 나머지 wrapper 스크립트는 tracked.
+
+- [ ] **Step 2:** `backend/pom.xml` 작성 (Spring Boot 3.5.0, Java 21 — 실제 부트스트랩은 `start.spring.io`로 받음)
+
+스캐폴드 권장 커맨드 (직접 작성 대신):
+```bash
+curl -sSf -G https://start.spring.io/starter.zip \
+  -d type=maven-project -d language=java -d bootVersion=3.5.0 \
+  -d baseDir=backend -d groupId=com.sweetbook -d artifactId=sweetbook \
+  -d packageName=com.sweetbook -d packaging=jar -d javaVersion=21 \
+  -d dependencies=web,data-jpa,validation,mysql,flyway,webflux \
+  -o starter.zip && unzip -q starter.zip && rm starter.zip
+```
+→ `mvnw`, `mvnw.cmd`, `.mvn/wrapper/`까지 자동 생성. 이후 H2(test)와 jsonpath(test) 의존성을 pom.xml에 추가:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -243,7 +263,7 @@ Thumbs.db
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.3.4</version>
+    <version>3.5.0</version>
     <relativePath/>
   </parent>
   <groupId>com.sweetbook</groupId>
@@ -261,6 +281,7 @@ Thumbs.db
     <dependency><groupId>org.flywaydb</groupId><artifactId>flyway-core</artifactId></dependency>
     <dependency><groupId>org.flywaydb</groupId><artifactId>flyway-mysql</artifactId></dependency>
     <dependency><groupId>com.h2database</groupId><artifactId>h2</artifactId><scope>test</scope></dependency>
+    <dependency><groupId>com.jayway.jsonpath</groupId><artifactId>json-path</artifactId><scope>test</scope></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
   </dependencies>
   <build>
@@ -1088,7 +1109,7 @@ git commit -m "feat: JPA entities (story, page, order, order_item)"
 // StoryRepository.java
 package com.sweetbook.repository;
 
-import com.sweetbook.domain.Story;
+import com.sweetbook.domain.story.Story;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
@@ -1099,7 +1120,7 @@ public interface StoryRepository extends JpaRepository<Story, String> {
 // PageRepository.java
 package com.sweetbook.repository;
 
-import com.sweetbook.domain.Page;
+import com.sweetbook.domain.story.Page;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
@@ -1110,7 +1131,7 @@ public interface PageRepository extends JpaRepository<Page, String> {
 // OrderRepository.java
 package com.sweetbook.repository;
 
-import com.sweetbook.domain.Order;
+import com.sweetbook.domain.order.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
@@ -1560,7 +1581,7 @@ git commit -m "feat: V2 seed (4 stories) + asset copy on startup"
 // StorySummaryDto.java
 package com.sweetbook.web.dto;
 
-import com.sweetbook.domain.StoryStatus;
+import com.sweetbook.domain.story.StoryStatus;
 import java.time.Instant;
 
 public record StorySummaryDto(
@@ -1571,7 +1592,7 @@ public record StorySummaryDto(
 // StoryDto.java
 package com.sweetbook.web.dto;
 
-import com.sweetbook.domain.StoryStatus;
+import com.sweetbook.domain.story.StoryStatus;
 import java.time.Instant;
 import java.util.List;
 
@@ -1584,7 +1605,7 @@ public record StoryDto(
 // PageDto.java
 package com.sweetbook.web.dto;
 
-import com.sweetbook.domain.PageLayout;
+import com.sweetbook.domain.story.PageLayout;
 
 public record PageDto(
     int pageNumber, PageLayout layout,
@@ -1597,7 +1618,7 @@ public record PageDto(
 ```java
 package com.sweetbook.service;
 
-import com.sweetbook.domain.*;
+import com.sweetbook.domain.story.*;
 import com.sweetbook.repository.StoryRepository;
 import com.sweetbook.web.dto.*;
 import org.springframework.stereotype.Service;
@@ -2269,7 +2290,7 @@ public class AsyncConfig {
 package com.sweetbook.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sweetbook.domain.*;
+import com.sweetbook.domain.story.*;
 import com.sweetbook.repository.*;
 import com.sweetbook.service.ai.*;
 import org.slf4j.*;
@@ -3556,7 +3577,8 @@ git commit -m "feat: story detail view with progress + book viewer"
 // OrderCreateRequest.java
 package com.sweetbook.web.dto;
 
-import com.sweetbook.domain.*;
+import com.sweetbook.domain.order.BookSize;
+import com.sweetbook.domain.order.CoverType;
 import jakarta.validation.constraints.*;
 
 public record OrderCreateRequest(
@@ -3571,13 +3593,14 @@ public record OrderCreateRequest(
 // OrderItemDto.java
 package com.sweetbook.web.dto;
 
-import com.sweetbook.domain.*;
+import com.sweetbook.domain.order.BookSize;
+import com.sweetbook.domain.order.CoverType;
 public record OrderItemDto(BookSize bookSize, CoverType coverType, int copies) {}
 
 // OrderDto.java
 package com.sweetbook.web.dto;
 
-import com.sweetbook.domain.OrderStatus;
+import com.sweetbook.domain.order.OrderStatus;
 import java.time.Instant;
 
 public record OrderDto(
@@ -3598,7 +3621,9 @@ public record OrderDto(
 ```java
 package com.sweetbook.service;
 
-import com.sweetbook.domain.*;
+import com.sweetbook.domain.order.*;
+import com.sweetbook.domain.story.Story;
+import com.sweetbook.domain.story.StoryStatus;
 import com.sweetbook.repository.*;
 import com.sweetbook.web.dto.*;
 import org.springframework.stereotype.Service;
@@ -3668,7 +3693,7 @@ public class OrderService {
 ```java
 package com.sweetbook.web;
 
-import com.sweetbook.domain.OrderStatus;
+import com.sweetbook.domain.order.OrderStatus;
 import com.sweetbook.service.OrderService;
 import com.sweetbook.web.dto.*;
 import jakarta.validation.Valid;
@@ -4046,7 +4071,7 @@ git commit -m "feat: orders kanban view + cards"
 ```java
 package com.sweetbook.service;
 
-import com.sweetbook.domain.*;
+import com.sweetbook.domain.order.Order;
 import com.sweetbook.repository.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -4127,7 +4152,9 @@ class ZipExportServiceTest {
 package com.sweetbook.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sweetbook.domain.*;
+import com.sweetbook.domain.order.Order;
+import com.sweetbook.domain.story.Page;
+import com.sweetbook.domain.story.Story;
 import com.sweetbook.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -4488,7 +4515,8 @@ class OrderFlowSmokeTest {
 ```java
 package com.sweetbook.integration;
 
-import com.sweetbook.domain.*;
+import com.sweetbook.domain.story.Story;
+import com.sweetbook.domain.story.StoryStatus;
 import com.sweetbook.repository.StoryRepository;
 import com.sweetbook.web.dto.StoryDto;
 import com.fasterxml.jackson.databind.ObjectMapper;

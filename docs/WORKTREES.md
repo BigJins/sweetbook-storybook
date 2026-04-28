@@ -85,7 +85,7 @@ git branch -d feature/backend-ai feature/frontend-ui   # 머지된 브랜치만 
 
 - **DB 인스턴스는 하나만**: 세 워크스페이스가 동시에 `docker compose up` 띄우면 3306 포트 + mysql-data 볼륨이 충돌. 한 번에 한 곳만 띄우거나 `.env`의 `DB_PORT`를 다르게.
 - **uploads/ 볼륨**: 각 워크트리는 자기 `uploads/` 디렉토리. 통합 테스트는 main에서. feature 워크트리에서 시드 자산 점검은 `backend/src/main/resources/seed/`만 바라봄.
-- **node_modules**: feature/frontend-ui에서만 `npm install`. main 워크스페이스에서는 frontend 작업 안 하므로 설치 불필요.
+- **node_modules**: 일반 규칙 — `npm install`은 frontend 작업하는 워크트리에서만 1회 (= `feature/frontend-ui`). main에선 설치 안 해도 됨. **예외**: Phase 0 스캐폴드 직후 main에서 검증용으로 1회 install이 가능하지만, 본 프로젝트는 Phase 0 시점에 install 없이 커밋했음(c50def9). Phase 4 시작 직전 `feature/frontend-ui` 워크트리에서 `cd frontend && npm install` 실행 권장.
 - **maven wrapper**: `backend/.mvn/wrapper/`는 git tracked → 모든 워크트리에 자동 복제됨. 별도 설치 불필요.
 - **docs/ 동기화**: 설계·계획 문서(`docs/*.md`) 변경은 main에서만. 다른 worktree는 rebase로 가져옴.
 - **`.worktrees/` 자체는 gitignored**: 워크트리 디렉토리가 main의 git status에 안 잡힘. 안전.
