@@ -1,0 +1,32 @@
+server:
+  port: ${APP_PORT:8080}
+
+spring:
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/sweetbook?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: ${DB_USER:sweetbook}
+    password: ${DB_PASSWORD:sweetbook}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 10MB
+
+app:
+  upload-dir: ${UPLOAD_DIR:./uploads}
+  ai:
+    mock-mode: ${AI_MOCK_MODE:true}
+    openai-api-key: ${OPENAI_API_KEY:}
+    text-model: gpt-4o-mini
+    vision-model: gpt-4o
+    image-model: gpt-image-1
+
+logging:
+  level:
+    com.sweetbook: DEBUG

@@ -1,0 +1,11 @@
+**/node_modules
+**/target
+**/dist
+**/.git
+**/.idea
+**/.vscode
+**/.worktrees
+uploads/
+*.md
+.env
+.env.local

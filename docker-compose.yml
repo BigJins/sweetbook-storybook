@@ -1,0 +1,38 @@
+services:
+  app:
+    build: .
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: sweetbook
+      DB_PASSWORD: ${DB_PASSWORD:-sweetbook}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      AI_MOCK_MODE: ${AI_MOCK_MODE:-true}
+      UPLOAD_DIR: /data/uploads
+    volumes:
+      - ./uploads:/data/uploads
+
+  db:
+    image: mysql:8
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    environment:
+      MYSQL_DATABASE: sweetbook
+      MYSQL_USER: sweetbook
+      MYSQL_PASSWORD: ${DB_PASSWORD:-sweetbook}
+      MYSQL_ROOT_PASSWORD: rootpass
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  mysql-data:
