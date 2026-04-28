@@ -14,14 +14,14 @@ html, body, #app {
     font-weight: 800;
     letter-spacing: -0.018em;
     word-break: keep-all;
-    color: rgb(28, 25, 23); /* stone-900 — darker but warmer than gray-900 */
+    color: rgb(28, 25, 23); /* stone-900 */
     font-feature-settings: "kern" on, "ss01" on;
   }
 
   .story-body {
     font-weight: 400;
     word-break: keep-all;
-    color: rgb(41, 37, 36); /* stone-800 — softer than pure black, warmer than gray */
+    color: rgb(41, 37, 36); /* stone-800 */
     font-feature-settings: "kern" on;
   }
 
@@ -30,5 +30,44 @@ html, body, #app {
     letter-spacing: 0.01em;
     color: rgb(120, 113, 108); /* stone-500 */
     font-feature-settings: "kern" on;
+  }
+
+  /* Cream/ivory printed-page surface — used as the right (or left) page in a
+     storybook spread. Subtle paper grain via stacked very-low-opacity gradients. */
+  .story-paper {
+    background:
+      radial-gradient(ellipse at 20% 0%, rgba(255, 248, 220, 0.45), transparent 55%),
+      radial-gradient(ellipse at 80% 100%, rgba(217, 196, 154, 0.18), transparent 60%),
+      linear-gradient(180deg, #fdf7e8 0%, #faf0d6 100%);
+  }
+
+  /* Cover title — large display text laid directly on the illustration with
+     a stacked text-shadow so it stays legible on bright/busy art. */
+  .story-cover-title {
+    color: #fff;
+    font-weight: 800;
+    letter-spacing: -0.018em;
+    word-break: keep-all;
+    text-shadow:
+      0 1px 0 rgba(0, 0, 0, 0.18),
+      0 2px 18px rgba(0, 0, 0, 0.55),
+      0 0 1px rgba(0, 0, 0, 0.6);
+    font-feature-settings: "kern" on, "ss01" on;
+  }
+
+  .story-cover-author {
+    color: rgba(255, 255, 255, 0.82);
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Spread spine — applied as inset shadow on the inner edges of each half so
+     the two pages of a spread look like a real opened book. */
+  .spread-spine-left {
+    box-shadow: inset -6px 0 14px -10px rgba(0, 0, 0, 0.45);
+  }
+  .spread-spine-right {
+    box-shadow: inset 6px 0 14px -10px rgba(0, 0, 0, 0.45);
   }
 }
