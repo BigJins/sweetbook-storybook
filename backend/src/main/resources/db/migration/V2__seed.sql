@@ -43,20 +43,20 @@ INSERT INTO page (id, story_id, page_number, layout, body_text, illustration_pro
 ('seed-page-3-4', 'seed-story-3', 4, 'SPLIT',  '둘은 산호 사이를 천천히 지나갔어요.', '산호 정원', 'seed/story-3/page-4.png'),
 ('seed-page-3-5', 'seed-story-3', 5, 'ENDING', '해질녘, 고래는 지호를 모래사장에 살며시 내려놓았어요.', '석양 해변', 'seed/story-3/page-5.png');
 
--- Story 4: 로봇과 화성 여행
+-- Story 4: 탄이의 낮잠 이야기
 INSERT INTO story (id, title, child_name, status, drawing_url, style_descriptor, imagination_prompt, created_at, updated_at)
-VALUES ('seed-story-4', '로봇과 화성 여행', '시우', 'COMPLETED',
+VALUES ('seed-story-4', '탄이의 낮잠 이야기', '서아', 'COMPLETED',
         'seed/story-4/drawing.png',
-        '{"keywords":["우주 톤","SF 일러스트","따뜻한 디테일"]}',
-        '로봇 친구와 화성에 캠핑',
+        '{"mood":"포근한","subject":"검은 포메라니안","keywords":["실내촬영","또렷한 디테일","자연스러운 포즈"],"sceneCues":["책상","모니터","사진"],"subjectType":"ANIMAL"}',
+        '강아지가 주인공, 강아지 이름은 탄이, 포메, 탄이가 낮잠을 많이잔다. 탄이의 주인인 서아(여자아이)는 탄이가 낮잠을 많이 자는게 섭섭하고, 왜그런지 궁금해. 탄이는 서아를 좋아해서 밤늦게 서아를 지키느라 힘들었던거. 서아가 탄이의 입장을 생각하게 되는 동화',
         '2026-04-28 10:15:00.000', '2026-04-28 10:15:00.000');
 
 INSERT INTO page (id, story_id, page_number, layout, body_text, illustration_prompt, illustration_url) VALUES
-('seed-page-4-1', 'seed-story-4', 1, 'COVER',  NULL, '로봇과 아이 표지', 'seed/story-4/cover.png'),
-('seed-page-4-2', 'seed-story-4', 2, 'SPLIT',  '시우와 로봇은 화성에 도착했어요. 모든 게 빨갛게 빛났답니다.', '화성 풍경', 'seed/story-4/page-2.png'),
-('seed-page-4-3', 'seed-story-4', 3, 'SPLIT',  '로봇은 모래에서 작은 빛 조각을 발견했어요.', '빛 조각 발견', 'seed/story-4/page-3.png'),
-('seed-page-4-4', 'seed-story-4', 4, 'SPLIT',  '둘은 캠프파이어 앞에서 우주 노래를 불렀답니다.', '캠프파이어', 'seed/story-4/page-4.png'),
-('seed-page-4-5', 'seed-story-4', 5, 'ENDING', '별이 가득한 하늘 아래, 둘은 나란히 잠들었어요.', '별 하늘 아래 잠든 둘', 'seed/story-4/page-5.png');
+('seed-page-4-1', 'seed-story-4', 1, 'COVER',  NULL, '검은 포메라니안 탄이가 침대 위에서 편안하게 낮잠을 자고 있는 모습. 서아가 책상 옆에 앉아 탄이를 바라보며 궁금해하는 표정.', 'seed/story-4/cover.png'),
+('seed-page-4-2', 'seed-story-4', 2, 'SPLIT',  '서아는 탄이가 낮잠을 많이 자는 것이 아쉬워. "왜 이렇게 자는 걸까?" 서아는 곰곰이 생각해봤어.', '서아가 책상에 앉아 탄이를 바라보며 고민하는 모습. 주변에는 색색의 장난감과 쿠션이 흩어져 있어.', 'seed/story-4/page-2.png'),
+('seed-page-4-3', 'seed-story-4', 3, 'SPLIT',  '그때, 서아는 탄이를 보며 말해봤어. "탄아, 할 일 없니?" 탄이는 낮잠을 자며 꿈속에서 서아를 지키고 있었어.', '탄이가 꿈속에서 서아를 지키는 환상적인 장면, 별빛이 반짝이는 배경 속에서 탄이가 용감하게 서아를 보호하는 모습.', 'seed/story-4/page-3.png'),
+('seed-page-4-4', 'seed-story-4', 4, 'SPLIT',  '서아는 이해했어. 탄이는 늦은 밤, 항상 서아를 지키기 위해 힘들었구나. "고마워, 탄아!"라고 말했어.', '서아가 탄이를 껴안으며 웃고 있는 모습. 주변은 따뜻한 빛으로 가득 차 있고, 사랑스러운 분위기가 감돌고 있어.', 'seed/story-4/page-4.png'),
+('seed-page-4-5', 'seed-story-4', 5, 'ENDING', '탄이와 서아는 서로를 바라보며 행복해했어. 이제 서로의 마음을 다 알게 되었으니까.', '탄이와 서아가 서로를 바라보며 미소 짓고 있는 따뜻한 장면. 배경에는 저녁 노을이 비치고, 평화로운 분위기가 느껴짐.', 'seed/story-4/page-5.png');
 
 -- 시드 주문 1건 (PROCESSING 상태)
 INSERT INTO orders (id, story_id, recipient_name, address_memo, status, status_history, created_at, updated_at)
