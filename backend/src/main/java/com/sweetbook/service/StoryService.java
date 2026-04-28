@@ -1,6 +1,8 @@
 package com.sweetbook.service;
 
+import com.sweetbook.domain.story.Page;
 import com.sweetbook.domain.story.Story;
+import com.sweetbook.repository.PageRepository;
 import com.sweetbook.repository.StoryRepository;
 import com.sweetbook.web.dto.PageDto;
 import com.sweetbook.web.dto.StoryCreateRequest;
@@ -19,10 +21,12 @@ import java.util.NoSuchElementException;
 public class StoryService {
 
     private final StoryRepository stories;
+    private final PageRepository pages;
     private final FileStorageService storage;
 
-    public StoryService(StoryRepository stories, FileStorageService storage) {
+    public StoryService(StoryRepository stories, PageRepository pages, FileStorageService storage) {
         this.stories = stories;
+        this.pages = pages;
         this.storage = storage;
     }
 
@@ -39,6 +43,14 @@ public class StoryService {
 
     public void kickOffAsyncGeneration(String storyId) {
         // Phase 3 (Task 18) wires this to StoryGenerationService.generate
+    }
+
+    @Transactional
+    public void updatePageBody(String storyId, int pageNumber, String bodyText) {
+        Page p = pages.findByStoryIdAndPageNumber(storyId, pageNumber)
+            .orElseThrow(() -> new NoSuchElementException("PAGE_NOT_FOUND"));
+        p.setBodyText(bodyText);
+        pages.save(p);
     }
 
     public List<StorySummaryDto> list() {
