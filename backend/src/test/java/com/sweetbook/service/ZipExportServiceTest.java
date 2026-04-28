@@ -1,5 +1,7 @@
 package com.sweetbook.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sweetbook.domain.order.Order;
 import com.sweetbook.repository.OrderRepository;
 import org.junit.jupiter.api.Test;
@@ -68,21 +70,33 @@ class ZipExportServiceTest {
     }
 
     @Test
-    void metadataIncludesStatusHistory() throws Exception {
+    void metadataStatusHistoryIsStructuredArray() throws Exception {
         var baos = new ByteArrayOutputStream();
         zipExporter.export("seed-order-1", baos);
-        try (var zis = new ZipInputStream(new ByteArrayInputStream(baos.toByteArray()))) {
+
+        byte[] metadataBytes = readEntry(baos.toByteArray(), "metadata.json");
+        ObjectMapper om = new ObjectMapper();
+        JsonNode root = om.readTree(metadataBytes);
+        JsonNode history = root.get("statusHistory");
+
+        assertTrue(history.isArray(),
+            "statusHistory must be a JSON array, got: " + history.getNodeType());
+        assertEquals(2, history.size(), "expected 2 history entries (PENDING + PROCESSING)");
+        assertEquals("PENDING", history.get(0).get("status").asText());
+        assertEquals("PROCESSING", history.get(1).get("status").asText());
+        assertTrue(history.get(0).has("ts"));
+    }
+
+    private byte[] readEntry(byte[] zipBytes, String suffix) throws Exception {
+        try (var zis = new ZipInputStream(new ByteArrayInputStream(zipBytes))) {
             ZipEntry e;
             while ((e = zis.getNextEntry()) != null) {
-                if (e.getName().endsWith("metadata.json")) {
-                    String content = new String(zis.readAllBytes());
-                    assertTrue(content.contains("statusHistory"));
-                    assertTrue(content.contains("PENDING"));
-                    assertTrue(content.contains("PROCESSING"));
-                    return;
+                if (e.getName().endsWith(suffix)) {
+                    return zis.readAllBytes();
                 }
             }
         }
-        fail("metadata.json not found");
+        fail("entry not found: " + suffix);
+        return new byte[0];
     }
 }

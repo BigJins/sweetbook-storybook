@@ -1,6 +1,8 @@
 package com.sweetbook.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.sweetbook.domain.order.Order;
 import com.sweetbook.domain.story.Page;
 import com.sweetbook.domain.story.Story;
@@ -90,8 +92,25 @@ public class ZipExportService {
             meta.put("copies", item.getCopies());
         }
         meta.put("createdAt", o.getCreatedAt().toString());
-        meta.put("statusHistory", o.getStatusHistoryJson());
+        meta.put("statusHistory", parseStatusHistory(o.getStatusHistoryJson()));
         return meta;
+    }
+
+    private JsonNode parseStatusHistory(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return om.createArrayNode();
+        }
+        try {
+            JsonNode node = om.readTree(raw);
+            // H2's JSON column stores values as JSON strings (e.g. "[...]")
+            // while MySQL stores them as native JSON. Unwrap one level if needed.
+            if (node.isTextual()) {
+                node = om.readTree(node.asText());
+            }
+            return node.isArray() ? node : (ArrayNode) om.createArrayNode().add(node);
+        } catch (IOException e) {
+            return om.createArrayNode();
+        }
     }
 
     private void putJson(ZipOutputStream zos, String name, Object data) throws IOException {
