@@ -60,6 +60,7 @@
 - 주문/ZIP/Docker/README
 - domain 패키지 구조 변경
 - API camelCase 규칙 변경
+- plan 근거 없는 generic setter 추가
 
 완료 조건:
 

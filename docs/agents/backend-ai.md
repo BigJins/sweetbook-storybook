@@ -44,6 +44,9 @@ You must not modify:
 Rules:
 - DTO field names and types must match the plan exactly.
 - Do not invent or rename API fields.
+- Use Lombok where it reduces repetitive boilerplate and fits the existing pattern.
+- Do not add generic public setters to domain entities unless the plan explicitly requires them.
+- Prefer intention-revealing domain methods over `setXxx(...)`.
 - If a DTO contract change is truly necessary, stop, update the plan on main first, push main, then continue after rebase.
 - Before starting work, run:
   ```

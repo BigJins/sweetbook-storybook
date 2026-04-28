@@ -40,6 +40,8 @@ Rules:
 - Do not implement feature/backend-ai or feature/frontend-ui work on main unless the plan explicitly assigns it here.
 - Review feature branch diffs before merge.
 - If DTO contract changes are required, main updates plan first, pushes main, then feature branches rebase.
+- Prefer Lombok for repetitive boilerplate where it matches the project pattern.
+- Reject generic public setters in domain entities unless the plan explicitly requires them.
 - Keep trunk stable.
 - Run compile/tests/smoke before merge where appropriate.
 - If branch scope is violated, stop and redirect the work instead of merging blindly.

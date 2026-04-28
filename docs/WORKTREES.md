@@ -78,6 +78,17 @@ git push origin main
 
 `--no-ff` 사용 이유: 머지 커밋이 남아 어떤 task 묶음이 어디 들어왔는지 git log에서 식별 가능. 30h 마감 + 면접 시연에서 git log를 보여줄 때 가독성 ↑.
 
+## 완료 보고 후 머지
+
+상세 절차는 문서에 길게 적지 않는다. 백엔드/프론트엔드가 각각 완료 보고를 끝낸 뒤에는 로컬 스킬 `merge-release`를 사용한다.
+
+예시 트리거:
+
+- `$merge-release`
+- `백엔드/프론트 완료 기준으로 순서 머지해줘`
+
+스킬이 내부적으로 repo 스크립트 `scripts/merge-feature-sequence.ps1`를 사용해 backend 선머지/테스트 → frontend 후머지/빌드·테스트 순서를 강제한다.
+
 ## 워크트리 정리 (Phase 9 마무리 후)
 
 ```bash
