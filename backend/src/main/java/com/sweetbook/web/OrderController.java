@@ -1,10 +1,10 @@
 package com.sweetbook.web;
 
-import com.sweetbook.domain.order.OrderStatus;
 import com.sweetbook.service.OrderService;
 import com.sweetbook.service.ZipExportService;
 import com.sweetbook.web.dto.OrderCreateRequest;
 import com.sweetbook.web.dto.OrderDto;
+import com.sweetbook.web.dto.OrderStatusUpdateRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -44,9 +43,8 @@ public class OrderController {
 
     @PatchMapping("/{id}/status")
     public OrderDto updateStatus(@PathVariable String id,
-                                 @RequestBody Map<String, String> body) {
-        OrderStatus target = OrderStatus.valueOf(body.get("status"));
-        return orders.updateStatus(id, target);
+                                 @Valid @RequestBody OrderStatusUpdateRequest req) {
+        return orders.updateStatus(id, req.status());
     }
 
     @GetMapping("/{id}/export")

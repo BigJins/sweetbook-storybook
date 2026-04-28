@@ -62,6 +62,22 @@ class OrderControllerTest {
     }
 
     @Test
+    void rejectsMissingStatusField() throws Exception {
+        mvc.perform(patch("/api/orders/seed-order-1/status").contentType("application/json")
+                .content("{}"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.error").value("VALIDATION_FAILED"));
+    }
+
+    @Test
+    void rejectsUnknownStatusValue() throws Exception {
+        mvc.perform(patch("/api/orders/seed-order-1/status").contentType("application/json")
+                .content("{\"status\":\"BOGUS\"}"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.error").value("VALIDATION_FAILED"));
+    }
+
+    @Test
     void exportEndpointReturnsZip() throws Exception {
         var mvcResult = mvc.perform(get("/api/orders/seed-order-1/export"))
             .andExpect(request().asyncStarted())

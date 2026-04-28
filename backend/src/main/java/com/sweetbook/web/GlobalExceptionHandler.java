@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -47,6 +48,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> tooLarge(MaxUploadSizeExceededException e) {
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
             .body(new ErrorResponse("FILE_TOO_LARGE", "5MB 이하 JPG/PNG만 업로드 가능합니다"));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> notReadable(HttpMessageNotReadableException e) {
+        return ResponseEntity.badRequest()
+            .body(new ErrorResponse("VALIDATION_FAILED", "요청 형식이 올바르지 않아요"));
     }
 
     @ExceptionHandler(Exception.class)
