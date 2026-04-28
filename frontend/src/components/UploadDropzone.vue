@@ -39,10 +39,10 @@ function onPick(e: Event) {
          @drop="onDrop">
     <img v-if="previewUrl" :src="previewUrl" class="absolute inset-0 w-full h-full object-cover" />
     <template v-else>
-      <div class="text-5xl">🎨</div>
-      <div class="mt-3 text-sm font-semibold">파일 끌어다 놓기</div>
-      <div class="mt-1 text-xs text-gray-500">또는 클릭하여 선택</div>
-      <div class="mt-4 text-[11px] text-gray-400">JPG, PNG · 최대 5MB</div>
+      <div class="text-6xl">🎨</div>
+      <div class="mt-4 text-base font-semibold">파일 끌어다 놓기</div>
+      <div class="mt-1 text-sm text-gray-500">또는 클릭하여 선택</div>
+      <div class="mt-5 text-xs text-gray-400">JPG, PNG · 최대 5MB</div>
     </template>
     <input type="file" accept="image/jpeg,image/png" capture="environment"
            class="hidden" @change="onPick" />

@@ -4,12 +4,45 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
 public class OpenAiClient implements AiClient {
+
+    private static final String ANALYSIS_SYSTEM_PROMPT = """
+        당신은 아이의 그림을 그림책 일러스트의 시작점으로 분석하는 전문 분석가입니다.
+        그림에서 다음 5가지를 추출해 한 줄 JSON으로만 답하세요.
+
+        1. subject: 그림의 주된 대상 한 줄. 동물이면 종/색까지 (예: "갈색 강아지", "주황색 공룡", "노란 새"). 사람이면 "아이"/"어른"/특정 캐릭터. 추상적이면 "별이 가득한 밤하늘" 같은 묘사.
+        2. subjectType: 다음 중 하나 — "ANIMAL" / "PERSON" / "CREATURE" / "OBJECT" / "SCENE".
+        3. mood: 그림 전체에서 느껴지는 감정 한 단어 (예: "따뜻한", "신비로운", "용감한", "엉뚱한", "포근한").
+        4. sceneCues: 그림 안에 보이는 배경/소품/디테일 2-4개의 짧은 한국어 명사구 배열 (예: ["꽃밭","해","집"]).
+        5. keywords: 일러스트 스타일을 4-6개의 짧은 한국어 키워드 배열로 (예: ["수채화풍","파스텔톤","굵은 외곽선","천진한 선"]).
+
+        형식 예시:
+        {"subject":"갈색 강아지","subjectType":"ANIMAL","mood":"따뜻한","sceneCues":["꽃밭","해","공"],"keywords":["수채화풍","파스텔톤","굵은 외곽선"]}
+        """;
+
+    private static final String STORY_SYSTEM_PROMPT = """
+        당신은 어린이용 한국어 그림책을 쓰는 작가입니다. 5페이지짜리 따뜻한 그림책을 만드세요.
+
+        가장 중요한 원칙:
+        - 주인공은 그림 속 대상(subject)입니다. 이 캐릭터의 시점과 행동을 중심으로 이야기를 풀어 주세요.
+        - 아이(childName)는 그림을 그린 사람으로, 이야기 속에 자연스럽게 등장시킵니다 — 친구, 동행자, 주인, 안내자, 대화 상대 등 맥락에 맞춰 배치하세요. 모든 페이지에 무리해서 등장시키지 말고, 1~3개 페이지에 자연스럽게 배치하면 충분합니다.
+        - 분석된 분위기(mood)와 장면 단서(sceneCues)를 본문과 일러스트 묘사에 녹여 주세요.
+        - 5페이지가 하나의 부드러운 흐름을 갖도록: 만남 → 모험 시작 → 절정/발견 → 따뜻한 마무리.
+        - 의성어, 짧은 대화 한 줄을 1~2번 정도 자연스럽게 섞어 그림책 톤을 살리세요.
+        - 아이의 상상(imaginationPrompt)은 가능한 만큼 그대로 살려서 본문 흐름에 녹입니다.
+
+        페이지 구성:
+        - page 1 (표지): bodyText는 null. illustrationPrompt에 표지 한 컷의 시각적 묘사 — subject가 중앙에, mood가 느껴지도록.
+        - page 2~4 (본문): bodyText 2~3문장, 자연스러운 그림책 톤. illustrationPrompt 한 줄 (그 페이지의 핵심 장면, 어떤 캐릭터가 어디서 무엇을 하는지).
+        - page 5 (엔딩): 따뜻한 마무리 1~2문장 + illustrationPrompt.
+
+        JSON으로만 답하세요. 형식:
+        {"title":"...","pages":[{"pageNumber":1,"bodyText":null,"illustrationPrompt":"..."},{"pageNumber":2,"bodyText":"...","illustrationPrompt":"..."},...]}
+        """;
 
     private final WebClient http;
     private final String apiKey;
@@ -33,23 +66,19 @@ public class OpenAiClient implements AiClient {
         Map<String, Object> body = Map.of(
             "model", visionModel,
             "messages", List.of(
-                Map.of("role", "system", "content",
-                    "당신은 아이의 그림을 보고 일러스트 스타일을 4-6개 짧은 한국어 키워드로 추출하는 분석가입니다. JSON 한 줄로만 답하세요. 형태: {\"keywords\":[\"...\",\"...\"]}"),
+                Map.of("role", "system", "content", ANALYSIS_SYSTEM_PROMPT),
                 Map.of("role", "user", "content", List.of(
-                    Map.of("type", "text", "text", "이 그림의 스타일을 분석해주세요"),
+                    Map.of("type", "text", "text", "이 그림을 위 5가지 항목으로 분석해 JSON 한 줄로 답해주세요."),
                     Map.of("type", "image_url", "image_url", Map.of("url", dataUrl))
                 ))
             ),
             "response_format", Map.of("type", "json_object"),
-            "max_tokens", 200
+            "max_tokens", 400
         );
         JsonNode resp = call("/v1/chat/completions", body);
         try {
             String content = resp.get("choices").get(0).get("message").get("content").asText();
-            JsonNode parsed = om.readTree(content);
-            List<String> kws = new ArrayList<>();
-            parsed.get("keywords").forEach(k -> kws.add(k.asText()));
-            return new StyleDescriptor(kws);
+            return om.readValue(content, StyleDescriptor.class);
         } catch (Exception e) {
             throw new RuntimeException("STYLE_PARSE_FAILED", e);
         }
@@ -57,23 +86,36 @@ public class OpenAiClient implements AiClient {
 
     @Override
     public StoryDraft generateStory(String childName, String prompt, StyleDescriptor style) {
-        String sys = """
-            당신은 어린이용 한국어 동화 작가입니다. 5페이지 동화를 만드세요.
-            - page 1은 표지: bodyText는 null, illustrationPrompt에 표지 장면 묘사
-            - page 2~4는 본문: bodyText 2-3문장, illustrationPrompt 한 줄
-            - page 5는 엔딩: 마무리 한 문장 + illustrationPrompt
-            JSON으로만 답하세요. 형태:
-            {"title":"...","pages":[{"pageNumber":1,"bodyText":null,"illustrationPrompt":"..."},...]}
-            """;
-        String user = "아이 이름: " + childName + "\n상상: " + prompt;
+        String userBlock = """
+            아이 이름(childName): %s
+            아이의 상상(imaginationPrompt): %s
+
+            그림 분석 결과:
+            - subject: %s
+            - subjectType: %s
+            - mood: %s
+            - sceneCues: %s
+            - 스타일 키워드: %s
+
+            위 정보를 바탕으로, subject를 주인공으로 하는 5페이지 그림책을 JSON으로 만들어 주세요.
+            """.formatted(
+                childName,
+                prompt,
+                style.subjectOrFallback(),
+                nullSafe(style.subjectType()),
+                style.moodOrFallback(),
+                String.join(", ", style.sceneCues()),
+                style.asPromptPrefix()
+            );
+
         Map<String, Object> body = Map.of(
             "model", textModel,
             "messages", List.of(
-                Map.of("role", "system", "content", sys),
-                Map.of("role", "user", "content", user)
+                Map.of("role", "system", "content", STORY_SYSTEM_PROMPT),
+                Map.of("role", "user", "content", userBlock)
             ),
             "response_format", Map.of("type", "json_object"),
-            "max_tokens", 1500
+            "max_tokens", 1800
         );
         JsonNode resp = call("/v1/chat/completions", body);
         try {
@@ -86,8 +128,25 @@ public class OpenAiClient implements AiClient {
 
     @Override
     public byte[] generateIllustration(String prompt, StyleDescriptor style) {
-        String fullPrompt = "스타일: " + style.asPromptPrefix() + "\n장면: " + prompt
-            + "\n어린이 동화책 일러스트, 4:5 세로 비율, 텍스트 없음";
+        String fullPrompt = """
+            스타일 키워드: %s
+            주인공: %s (%s)
+            전체 분위기: %s
+            장면 단서: %s
+
+            장면: %s
+
+            어린이 그림책 일러스트, 4:5 세로 비율, 텍스트 없음, 손그림 느낌, 부드러운 색감.
+            주인공이 화면 안에 명확히 보이도록 구성.
+            """.formatted(
+                style.asPromptPrefix(),
+                style.subjectOrFallback(),
+                nullSafe(style.subjectType()),
+                style.moodOrFallback(),
+                String.join(", ", style.sceneCues()),
+                prompt
+            );
+
         Map<String, Object> body = Map.of(
             "model", imageModel,
             "prompt", fullPrompt,
@@ -101,6 +160,10 @@ public class OpenAiClient implements AiClient {
         } catch (Exception e) {
             throw new RuntimeException("IMAGE_PARSE_FAILED", e);
         }
+    }
+
+    private static String nullSafe(String s) {
+        return s == null ? "" : s;
     }
 
     private JsonNode call(String path, Map<String, Object> body) {

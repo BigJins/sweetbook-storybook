@@ -46,24 +46,24 @@ onMounted(start);
 
 <template>
   <main class="max-w-6xl mx-auto">
-    <div class="bg-white border-b border-gray-200 px-8 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-4 text-sm">
-        <RouterLink to="/" class="text-gray-500">← 동화 목록</RouterLink>
-        <h1 class="font-bold text-base">{{ story?.title || '동화 생성중...' }}</h1>
-        <span v-if="story" class="text-xs text-gray-500">작가: {{ story.childName }}</span>
+    <div class="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-4 min-w-0">
+        <RouterLink to="/" class="text-base text-gray-500 hover:text-gray-900 shrink-0">← 동화 목록</RouterLink>
+        <h1 class="font-extrabold text-xl tracking-tight truncate">{{ story?.title || '동화 생성중...' }}</h1>
+        <span v-if="story" class="text-sm text-gray-500 shrink-0">작가: {{ story.childName }}</span>
       </div>
-      <button v-if="isCompleted" class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-bold"
+      <button v-if="isCompleted" class="bg-gray-900 text-white px-5 py-2.5 rounded-xl text-base font-bold shadow-md hover:shadow-lg transition shrink-0"
               @click="showOrder = true">📦 이 동화로 책 만들기</button>
     </div>
 
     <Spinner v-if="!story" />
 
-    <div v-else-if="isGenerating" class="py-12 px-8 text-center">
-      <div class="text-sm text-gray-500 mb-6">{{ story?.childName }}의 동화를 만들고 있어요</div>
+    <div v-else-if="isGenerating" class="py-14 px-8 text-center">
+      <div class="text-base text-gray-500 mb-8">{{ story?.childName }}의 동화를 만들고 있어요</div>
       <ProgressStepper :status="story!.status" :completed-pages="completedPages" />
-      <div class="mt-8 grid grid-cols-5 gap-3 max-w-2xl mx-auto">
+      <div class="mt-10 grid grid-cols-5 gap-3 max-w-2xl mx-auto">
         <div v-for="n in 5" :key="n"
-             class="aspect-[3/4] rounded-lg flex items-center justify-center text-xs"
+             class="aspect-[3/4] rounded-lg flex items-center justify-center text-sm font-semibold"
              :class="story!.pages?.find(p => p.pageNumber === n)?.illustrationUrl
                      ? 'bg-emerald-100 text-emerald-700'
                      : 'bg-gray-100 text-gray-400'">
@@ -72,10 +72,10 @@ onMounted(start);
       </div>
     </div>
 
-    <div v-else-if="isFailed" class="py-12 px-8 text-center text-red-700">
-      <div class="text-3xl">⚠️</div>
-      <p class="mt-3 font-semibold">{{ story?.errorMessage || '동화 생성에 실패했어요' }}</p>
-      <p class="mt-1 text-xs text-red-600">목록 화면에서 다시 시도 버튼을 눌러주세요</p>
+    <div v-else-if="isFailed" class="py-16 px-8 text-center text-red-700">
+      <div class="text-5xl">⚠️</div>
+      <p class="mt-4 text-lg font-semibold">{{ story?.errorMessage || '동화 생성에 실패했어요' }}</p>
+      <p class="mt-2 text-sm text-red-600">목록 화면에서 다시 시도 버튼을 눌러주세요</p>
     </div>
 
     <template v-else-if="isCompleted && story">

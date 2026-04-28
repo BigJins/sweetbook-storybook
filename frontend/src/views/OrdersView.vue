@@ -47,14 +47,14 @@ onMounted(refresh);
 </script>
 
 <template>
-  <main class="max-w-7xl mx-auto px-8 py-8">
-    <div class="flex justify-between items-baseline mb-6">
-      <h1 class="text-xl font-extrabold">주문 관리</h1>
-      <span class="text-xs text-gray-500">총 {{ orders.length }}건</span>
+  <main class="max-w-7xl mx-auto px-8 py-10">
+    <div class="flex justify-between items-baseline mb-7">
+      <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">주문 관리</h1>
+      <span class="text-sm text-gray-500">총 {{ orders.length }}건</span>
     </div>
 
     <div v-if="loadError"
-         class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-3 mb-4">
+         class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-4 mb-5">
       ⚠️ {{ loadError }}
     </div>
 
@@ -64,7 +64,7 @@ onMounted(refresh);
       icon="📦" title="아직 주문이 없어요"
       subtitle="동화 미리보기에서 '책 만들기' 버튼을 눌러보세요" />
 
-    <div v-else-if="orders.length > 0" class="grid grid-cols-3 gap-4">
+    <div v-else-if="orders.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-5">
       <KanbanColumn title="PENDING" icon="⏳" :orders="pending" bg="bg-amber-100" title-color="text-amber-900"
                     @advance="onAdvance" @download="onDownload" />
       <KanbanColumn title="PROCESSING" icon="🛠️" :orders="processing" bg="bg-blue-100" title-color="text-blue-900"

@@ -9,9 +9,13 @@ defineEmits<{ advance: [id: string]; download: [id: string] }>();
 </script>
 
 <template>
-  <div :class="['rounded-xl p-3', bg]">
-    <div :class="['font-bold text-xs mb-3', titleColor]">{{ icon }} {{ title }} ({{ orders.length }})</div>
-    <div class="space-y-2">
+  <div :class="['rounded-2xl p-4', bg]">
+    <div :class="['font-bold text-sm mb-4 flex items-center gap-1.5', titleColor]">
+      <span class="text-base">{{ icon }}</span>
+      <span>{{ title }}</span>
+      <span class="opacity-60">({{ orders.length }})</span>
+    </div>
+    <div class="space-y-3">
       <OrderCard v-for="o in orders" :key="o.id" :order="o"
                  @advance="id => $emit('advance', id)"
                  @download="id => $emit('download', id)" />

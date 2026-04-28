@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.Files;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.Executor;
 
@@ -98,7 +97,7 @@ public class StoryGenerationService {
         try {
             style = om.readValue(s.getStyleDescriptorJson(), StyleDescriptor.class);
         } catch (Exception e) {
-            style = new StyleDescriptor(List.of());
+            style = StyleDescriptor.empty();
         }
         generateIllustrationForPage(storyId, pageNumber, style);
     }
