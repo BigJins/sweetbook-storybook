@@ -3,11 +3,14 @@ package com.sweetbook.service;
 import com.sweetbook.domain.story.Story;
 import com.sweetbook.repository.StoryRepository;
 import com.sweetbook.web.dto.PageDto;
+import com.sweetbook.web.dto.StoryCreateRequest;
 import com.sweetbook.web.dto.StoryDto;
 import com.sweetbook.web.dto.StorySummaryDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -16,9 +19,26 @@ import java.util.NoSuchElementException;
 public class StoryService {
 
     private final StoryRepository stories;
+    private final FileStorageService storage;
 
-    public StoryService(StoryRepository stories) {
+    public StoryService(StoryRepository stories, FileStorageService storage) {
         this.stories = stories;
+        this.storage = storage;
+    }
+
+    @Transactional
+    public Story create(StoryCreateRequest req, MultipartFile drawing) throws IOException {
+        if (drawing == null || drawing.isEmpty()) {
+            throw new IllegalArgumentException("DRAWING_REQUIRED");
+        }
+        String drawingPath = storage.saveDrawing(drawing);
+        Story s = Story.newDraft(req.childName(), req.imaginationPrompt());
+        s.setDrawingUrl(drawingPath);
+        return stories.save(s);
+    }
+
+    public void kickOffAsyncGeneration(String storyId) {
+        // Phase 3 (Task 18) wires this to StoryGenerationService.generate
     }
 
     public List<StorySummaryDto> list() {
