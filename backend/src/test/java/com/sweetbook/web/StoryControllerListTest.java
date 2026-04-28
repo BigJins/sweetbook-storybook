@@ -18,7 +18,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     "spring.datasource.driver-class-name=org.h2.Driver",
     "spring.datasource.username=sa",
     "spring.datasource.password=",
-    "spring.jpa.hibernate.ddl-auto=none",
     "spring.flyway.locations=classpath:db/migration",
     "app.upload-dir=./build/test-uploads",
     "app.ai.mock-mode=true"
