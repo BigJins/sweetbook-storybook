@@ -22,6 +22,11 @@ import java.util.NoSuchElementException;
 @Service
 public class StoryGenerationService {
 
+    // Note on @Transactional helpers below: generate() calls them on `this`, so Spring's
+    // proxy is bypassed and the @Transactional annotation is *not* applied. The methods
+    // still work because each repository.save() opens its own implicit transaction.
+    // Treat the annotations as documentation of intent, not as load-bearing.
+
     private static final Logger log = LoggerFactory.getLogger(StoryGenerationService.class);
 
     private final StoryRepository stories;
@@ -97,6 +102,7 @@ public class StoryGenerationService {
     public void retry(String storyId) {
         Story s = loadOrThrow(storyId);
         if (s.getStatus() != StoryStatus.FAILED) {
+            log.warn("retry({}) ignored: story is in state {}, only FAILED can retry", storyId, s.getStatus());
             return;
         }
         Story fresh = loadOrThrow(storyId);
