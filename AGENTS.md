@@ -2,6 +2,8 @@
 
 이 파일은 서브에이전트 역할 분담 문서다. 공통 규칙은 루트 `CLAUDE.md`를 따른다.
 
+> **dispatch 프롬프트**: 각 에이전트에 그대로 복사해 쓸 수 있는 운영 지침은 [`docs/agents/`](docs/agents/README.md)에 있다 — `main-reviewer.md`·`backend-ai.md`·`frontend-ui.md`. 본 파일은 역할·책임·파일 경계 정의.
+
 ## 목표
 
 - 리서치, 플랜, 구현, 리뷰를 섞지 않는다.
