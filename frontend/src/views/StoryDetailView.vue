@@ -7,6 +7,7 @@ import ProgressStepper from '../components/ProgressStepper.vue';
 import BeforeAfterStrip from '../components/BeforeAfterStrip.vue';
 import BookViewer from '../components/BookViewer.vue';
 import OrderModal from '../components/OrderModal.vue';
+import Spinner from '../components/Spinner.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -55,7 +56,9 @@ onMounted(start);
               @click="showOrder = true">📦 이 동화로 책 만들기</button>
     </div>
 
-    <div v-if="isGenerating" class="py-12 px-8 text-center">
+    <Spinner v-if="!story" />
+
+    <div v-else-if="isGenerating" class="py-12 px-8 text-center">
       <div class="text-sm text-gray-500 mb-6">{{ story?.childName }}의 동화를 만들고 있어요</div>
       <ProgressStepper :status="story!.status" :completed-pages="completedPages" />
       <div class="mt-8 grid grid-cols-5 gap-3 max-w-2xl mx-auto">

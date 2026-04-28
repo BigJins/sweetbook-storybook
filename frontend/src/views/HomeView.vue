@@ -2,17 +2,23 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { RouterLink } from 'vue-router';
 import { listStories, retryStory } from '../api/stories';
+import { ApiException } from '../api/client';
 import type { StorySummary } from '../types';
 import StoryCard from '../components/StoryCard.vue';
 import EmptyState from '../components/EmptyState.vue';
+import Spinner from '../components/Spinner.vue';
 
 const stories = ref<StorySummary[]>([]);
 const loading = ref(true);
+const loadError = ref<string | null>(null);
 let pollTimer: number | null = null;
 
 async function refresh() {
   try {
     stories.value = await listStories();
+    loadError.value = null;
+  } catch (e) {
+    loadError.value = e instanceof ApiException ? e.message : '서버에 연결할 수 없어요';
   } finally {
     loading.value = false;
   }
@@ -62,13 +68,18 @@ onUnmounted(() => { if (pollTimer) clearInterval(pollTimer); });
         <span class="text-xs text-gray-500">총 {{ stories.length }}편</span>
       </div>
 
-      <div v-if="loading" class="text-center py-16 text-gray-500">불러오는 중...</div>
+      <div v-if="loadError"
+           class="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-3 mb-4">
+        ⚠️ {{ loadError }}
+      </div>
 
-      <EmptyState v-else-if="stories.length === 0"
+      <Spinner v-if="loading" />
+
+      <EmptyState v-else-if="stories.length === 0 && !loadError"
         icon="📖" title="아직 동화가 없어요" subtitle="첫 동화를 만들어 시작해보세요"
         cta-text="+ 첫 동화 만들기" cta-to="/stories/new" />
 
-      <div v-else class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div v-else-if="stories.length > 0" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <StoryCard v-for="s in stories" :key="s.id" :story="s" @retry="onRetry" />
       </div>
     </section>
