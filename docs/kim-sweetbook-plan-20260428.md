@@ -4996,7 +4996,9 @@ git push
 
 ## 실행 핸드오프
 
-**계획 완료. 저장 위치: `C:/Users/kim/.gstack/projects/Desktop/kim-sweetbook-plan-20260428.md`**
+**계획 완료. 최신본 저장 위치 (truth source): `C:/dev/sweetbook-storybook/docs/kim-sweetbook-plan-20260428.md`** (git tracked, main 브랜치).
+
+`C:/Users/kim/.gstack/projects/Desktop/kim-sweetbook-plan-20260428.md`에도 동기 사본이 있으나 작업용 캐시일 뿐, 변경은 항상 repo의 docs/ 쪽을 갱신한 후 .gstack로 복사하는 흐름.
 
 이 계획은 사용자 본인이 직접 실행하는 형태로 작성됨 (subagent-driven은 OpenAI 키 노출 등으로 부적합). 다음 두 방식 중 선택:
 
