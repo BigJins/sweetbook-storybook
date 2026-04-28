@@ -1,6 +1,7 @@
 package com.sweetbook.domain.order;
 
 import com.sweetbook.domain.story.Story;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -9,6 +10,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 import java.time.Instant;
@@ -45,6 +47,9 @@ public class Order {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private OrderItem item;
+
     protected Order() {
     }
 
@@ -56,9 +61,9 @@ public class Order {
         order.recipientName = recipientName;
         order.addressMemo = addressMemo;
         order.status = OrderStatus.PENDING;
-        order.statusHistoryJson = "[]";
         order.createdAt = now;
         order.updatedAt = now;
+        order.statusHistoryJson = "[{\"status\":\"PENDING\",\"ts\":\"" + now + "\"}]";
         return order;
     }
 
@@ -68,6 +73,8 @@ public class Order {
         }
         this.status = target;
         this.updatedAt = Instant.now();
+        String entry = ",{\"status\":\"" + target + "\",\"ts\":\"" + updatedAt + "\"}]";
+        this.statusHistoryJson = this.statusHistoryJson.replaceFirst("\\]$", entry);
     }
 
     public String getId() {
@@ -78,7 +85,35 @@ public class Order {
         return story;
     }
 
+    public String getRecipientName() {
+        return recipientName;
+    }
+
+    public String getAddressMemo() {
+        return addressMemo;
+    }
+
     public OrderStatus getStatus() {
         return status;
+    }
+
+    public String getStatusHistoryJson() {
+        return statusHistoryJson;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public OrderItem getItem() {
+        return item;
+    }
+
+    public void setItem(OrderItem item) {
+        this.item = item;
     }
 }

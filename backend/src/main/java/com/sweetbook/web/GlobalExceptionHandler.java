@@ -40,7 +40,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<ErrorResponse> notFound(NoSuchElementException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .body(new ErrorResponse(e.getMessage(), "찾을 수 없습니다"));
+            .body(new ErrorResponse(e.getMessage(), userMessage(e.getMessage())));
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
@@ -60,6 +60,10 @@ public class GlobalExceptionHandler {
         return switch (code) {
             case "UNSUPPORTED_IMAGE_TYPE" -> "5MB 이하 JPG/PNG만 업로드 가능합니다";
             case "DRAWING_REQUIRED" -> "그림을 업로드해주세요";
+            case "STORY_NOT_COMPLETED" -> "완성된 동화로만 주문할 수 있어요";
+            case "STORY_NOT_FOUND" -> "동화를 찾을 수 없어요";
+            case "ORDER_NOT_FOUND" -> "주문을 찾을 수 없어요";
+            case "PAGE_NOT_FOUND" -> "페이지를 찾을 수 없어요";
             default -> code;
         };
     }
