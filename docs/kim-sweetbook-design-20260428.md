@@ -88,29 +88,37 @@ Deadline: 2026-04-29 23:59 (≈30h remaining)
 
 **데이터 모델 (JPA 필드명 — DB 컬럼은 snake_case로 매핑)**
 
+패키지 그룹핑: 도메인 layer만 feature(`story`/`order`)로 한 번 더 나눔. 헥사고날·DDD 같은 무거운 구조는 도입 안 함 (30h 마감 + 면접 답변 부담). 자세한 컨벤션은 `docs/WORKTREES.md`.
+
 ```
-Story
-  id (UUID), title, childName
-  status (DRAFT / ANALYZING_DRAWING / GENERATING_STORY / GENERATING_IMAGES / COMPLETED / FAILED)
-  errorMessage (nullable, FAILED 시 한국어 사용자용 메시지)
-  drawingUrl, styleDescriptorJson (JSON 컬럼)
-  imaginationPrompt (text)
-  createdAt, updatedAt
+com.sweetbook.domain.story
+  Story
+    id (UUID), title, childName
+    status (DRAFT / ANALYZING_DRAWING / GENERATING_STORY / GENERATING_IMAGES / COMPLETED / FAILED)
+    errorMessage (nullable, FAILED 시 한국어 사용자용 메시지)
+    drawingUrl, styleDescriptorJson (JSON 컬럼)
+    imaginationPrompt (text)
+    createdAt, updatedAt
 
-Page
-  id, storyId (FK), pageNumber (1~5)
-  layout (COVER / SPLIT / ENDING)  -- pageNumber로 결정 (1=COVER, 2~4=SPLIT, 5=ENDING)
-  bodyText (nullable, COVER는 제목으로 대체)
-  illustrationPrompt, illustrationUrl (nullable, 생성 전엔 null)
+  Page
+    id, storyId (FK), pageNumber (1~5)
+    layout (COVER / SPLIT / ENDING)  -- pageNumber로 결정 (1=COVER, 2~4=SPLIT, 5=ENDING)
+    bodyText (nullable, COVER는 제목으로 대체)
+    illustrationPrompt, illustrationUrl (nullable, 생성 전엔 null)
 
-Order  (Lv2)
-  id (UUID), storyId (FK), recipientName, addressMemo (string-only, 발송 안 함)
-  status (PENDING / PROCESSING / COMPLETED)  -- 전진만 허용
-  statusHistory (JSON list of {status, ts})
-  createdAt, updatedAt
+  StoryStatus, PageLayout (enum)
 
-OrderItem
-  id, orderId (FK), bookSize (A5/B5), coverType (HARD/SOFT), copies (1~10)
+com.sweetbook.domain.order
+  Order  (Lv2)
+    id (UUID), storyId (FK → domain.story.Story), recipientName, addressMemo
+    status (PENDING / PROCESSING / COMPLETED)  -- 전진만 허용
+    statusHistory (JSON list of {status, ts})
+    createdAt, updatedAt
+
+  OrderItem
+    id, orderId (FK), bookSize (A5/B5), coverType (HARD/SOFT), copies (1~10)
+
+  OrderStatus, BookSize, CoverType (enum)
 ```
 
 **서비스 흐름 (Lv1)**

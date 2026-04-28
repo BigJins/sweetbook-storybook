@@ -41,6 +41,22 @@
 - 백엔드는 `WebConfig#addViewControllers`로 `/`, `/stories/new`, `/stories/{id}`, `/orders`, `/orders/{id}`를 `forward:/index.html`로 처리. `/api/**`·`/assets/**`은 컨트롤러/ResourceHandler가 먼저 잡으므로 충돌 없음.
 - 이 fallback이 빠지면 데모에서 URL 새로고침 시 404 발생. Task 10에서 박는다.
 
+**도메인 패키지 그룹핑 (Task 5 이후 모든 코드에 적용)**
+
+- `com.sweetbook.domain.story.*` — Story aggregate (Story, StoryStatus, Page, PageLayout)
+- `com.sweetbook.domain.order.*` — Order aggregate (Order, OrderStatus, OrderItem, BookSize, CoverType)
+- 헥사고날·DDD 패턴 안 씀. 헥사고날 제외 이유는 `docs/WORKTREES.md` 참고.
+- **Task 8 이후 plan 코드 샘플의 `import com.sweetbook.domain.*;`는 다음과 같이 풀어 적용**:
+  - 스토리만 쓰는 곳: `import com.sweetbook.domain.story.*;`
+  - 주문만 쓰는 곳: `import com.sweetbook.domain.order.*;`
+  - 둘 다 쓰는 곳(예: `OrderService`, `ZipExportService`): import 두 줄.
+- DTO는 `com.sweetbook.web.dto` 한 곳에 평탄. enum 타입을 직접 노출(`record OrderItemDto(BookSize bookSize, ...)`)할 때 import 두 줄 발생.
+
+**워크트리 운영**
+
+- main + feature/backend-ai + feature/frontend-ui 3개 워크트리. Strategy B + 옵션 2.
+- phase별 매핑·머지 케이던스·DTO 컨벤션 동기화 규칙은 `docs/WORKTREES.md`에 명시.
+
 **참조**: 모든 결정은 `kim-sweetbook-design-20260428.md`에 박혀 있음. 의문 생기면 그 문서를 truth source로.
 
 ---
@@ -49,20 +65,24 @@
 
 ### Backend (`backend/`)
 
+도메인 layer는 `story`/`order` feature로 그룹핑. 다른 layer는 평탄(파일 수가 적어서 그룹핑이 노이즈). 헥사고날·DDD 같은 무거운 구조는 30h 마감 + 면접 답변 부담으로 도입 안 함.
+
 ```
 backend/
   pom.xml
   src/main/java/com/sweetbook/
     SweetbookApplication.java                  # @SpringBootApplication, @EnableAsync
     config/
-      WebConfig.java                           # /api/files/** ResourceHandler
+      WebConfig.java                           # /api/files/** ResourceHandler + SPA fallback
       AsyncConfig.java                         # ThreadPoolTaskExecutor
-      OpenAiConfig.java                        # WebClient bean + ai 설정
+      AiConfig.java                            # WebClient bean + AiClient 분기 (mock/real)
     domain/
-      Story.java, StoryStatus.java
-      Page.java, PageLayout.java
-      Order.java, OrderStatus.java
-      OrderItem.java, BookSize.java, CoverType.java
+      story/
+        Story.java, StoryStatus.java
+        Page.java, PageLayout.java
+      order/
+        Order.java, OrderStatus.java
+        OrderItem.java, BookSize.java, CoverType.java
     repository/
       StoryRepository.java, PageRepository.java
       OrderRepository.java
@@ -72,19 +92,22 @@ backend/
       OrderService.java                        # CRUD + 전이 검증
       ZipExportService.java
       FileStorageService.java                  # 저장/경로/seed 복사
+      SeedService.java                         # ApplicationRunner: resources/seed → /data/uploads/seed
       ai/
         AiClient.java                          # interface
         OpenAiClient.java
         MockAiClient.java
-        AiClientFactory.java
+        StyleDescriptor.java, StoryDraft.java
     web/
-      StoryController.java, OrderController.java, FileController.java(없음 — ResourceHandler 처리)
+      StoryController.java
+      OrderController.java
+      GlobalExceptionHandler.java
       dto/
         StoryDto.java, StorySummaryDto.java, PageDto.java
-        OrderDto.java, OrderCreateRequest.java, OrderStatusUpdateRequest.java
+        OrderDto.java, OrderItemDto.java
         StoryCreateRequest.java, PageBodyUpdateRequest.java
+        OrderCreateRequest.java
         ErrorResponse.java
-      GlobalExceptionHandler.java
   src/main/resources/
     application.yml
     db/migration/V1__schema.sql
@@ -96,14 +119,23 @@ backend/
       story-4/...
       placeholder.png
   src/test/java/com/sweetbook/
-    domain/StoryStatusTransitionTest.java
-    domain/OrderStatusTransitionTest.java
+    domain/story/StoryStatusTransitionTest.java
+    domain/order/OrderStatusTransitionTest.java
     service/FileStorageServiceTest.java
     service/ZipExportServiceTest.java
     service/StoryGenerationServiceTest.java
-    web/StoryControllerTest.java
+    web/StoryControllerListTest.java
+    web/StoryControllerCreateTest.java
     web/OrderControllerTest.java
+    web/SpaFallbackTest.java
+    integration/OrderFlowSmokeTest.java
+    integration/StoryCreateSmokeTest.java
 ```
+
+**패키지 컨벤션 요약**
+- `com.sweetbook.domain.story.*` — Story aggregate (Story, StoryStatus, Page, PageLayout)
+- `com.sweetbook.domain.order.*` — Order aggregate (Order, OrderStatus, OrderItem, BookSize, CoverType)
+- 다른 패키지에서 두 도메인 모두 참조 시 import 두 줄 필요. 예: `OrderService`는 `import com.sweetbook.domain.order.*; import com.sweetbook.domain.story.Story;` 둘 다.
 
 ### Frontend (`frontend/`)
 
@@ -589,19 +621,19 @@ git commit -m "feat: V1 schema (story, page, orders, order_item)"
 
 ---
 
-### Task 5 — Enum 클래스들
+### Task 5 — Enum 클래스들 (도메인 feature 그룹핑)
 
 **Files:**
-- Create: `backend/src/main/java/com/sweetbook/domain/StoryStatus.java`
-- Create: `backend/src/main/java/com/sweetbook/domain/PageLayout.java`
-- Create: `backend/src/main/java/com/sweetbook/domain/OrderStatus.java`
-- Create: `backend/src/main/java/com/sweetbook/domain/BookSize.java`
-- Create: `backend/src/main/java/com/sweetbook/domain/CoverType.java`
+- Create: `backend/src/main/java/com/sweetbook/domain/story/StoryStatus.java`
+- Create: `backend/src/main/java/com/sweetbook/domain/story/PageLayout.java`
+- Create: `backend/src/main/java/com/sweetbook/domain/order/OrderStatus.java`
+- Create: `backend/src/main/java/com/sweetbook/domain/order/BookSize.java`
+- Create: `backend/src/main/java/com/sweetbook/domain/order/CoverType.java`
 
 - [ ] **Step 1:** `StoryStatus.java` (전이 규칙 포함)
 
 ```java
-package com.sweetbook.domain;
+package com.sweetbook.domain.story;
 
 import java.util.Set;
 import java.util.Map;
@@ -631,7 +663,7 @@ public enum StoryStatus {
 - [ ] **Step 2:** `OrderStatus.java`
 
 ```java
-package com.sweetbook.domain;
+package com.sweetbook.domain.order;
 
 import java.util.Set;
 import java.util.Map;
@@ -651,11 +683,11 @@ public enum OrderStatus {
 }
 ```
 
-- [ ] **Step 3:** `PageLayout.java` + `BookSize.java` + `CoverType.java`
+- [ ] **Step 3:** `PageLayout.java` (story) + `BookSize.java`/`CoverType.java` (order)
 
 ```java
-// PageLayout.java
-package com.sweetbook.domain;
+// domain/story/PageLayout.java
+package com.sweetbook.domain.story;
 public enum PageLayout {
     COVER, SPLIT, ENDING;
     public static PageLayout forPageNumber(int n) {
@@ -665,12 +697,12 @@ public enum PageLayout {
     }
 }
 
-// BookSize.java
-package com.sweetbook.domain;
+// domain/order/BookSize.java
+package com.sweetbook.domain.order;
 public enum BookSize { A5, B5 }
 
-// CoverType.java
-package com.sweetbook.domain;
+// domain/order/CoverType.java
+package com.sweetbook.domain.order;
 public enum CoverType { SOFT, HARD }
 ```
 
@@ -678,7 +710,7 @@ public enum CoverType { SOFT, HARD }
 
 ```bash
 git add backend/src/main/java/com/sweetbook/domain/
-git commit -m "feat: domain enums with transition rules"
+git commit -m "feat: domain enums with transition rules (story/order grouping)"
 ```
 
 ---
@@ -686,13 +718,13 @@ git commit -m "feat: domain enums with transition rules"
 ### Task 6 — Story·Order 상태 전이 TDD
 
 **Files:**
-- Create: `backend/src/test/java/com/sweetbook/domain/StoryStatusTransitionTest.java`
-- Create: `backend/src/test/java/com/sweetbook/domain/OrderStatusTransitionTest.java`
+- Create: `backend/src/test/java/com/sweetbook/domain/story/StoryStatusTransitionTest.java`
+- Create: `backend/src/test/java/com/sweetbook/domain/order/OrderStatusTransitionTest.java`
 
 - [ ] **Step 1:** `StoryStatusTransitionTest.java` 작성 (failing test)
 
 ```java
-package com.sweetbook.domain;
+package com.sweetbook.domain.story;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -741,7 +773,7 @@ class StoryStatusTransitionTest {
 - [ ] **Step 2:** `OrderStatusTransitionTest.java` 작성
 
 ```java
-package com.sweetbook.domain;
+package com.sweetbook.domain.order;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -786,18 +818,18 @@ git commit -m "test: domain status transition rules"
 
 ---
 
-### Task 7 — JPA 엔티티들
+### Task 7 — JPA 엔티티들 (도메인 feature 그룹핑)
 
 **Files:**
-- Create: `backend/src/main/java/com/sweetbook/domain/Story.java`
-- Create: `backend/src/main/java/com/sweetbook/domain/Page.java`
-- Create: `backend/src/main/java/com/sweetbook/domain/Order.java`
-- Create: `backend/src/main/java/com/sweetbook/domain/OrderItem.java`
+- Create: `backend/src/main/java/com/sweetbook/domain/story/Story.java`
+- Create: `backend/src/main/java/com/sweetbook/domain/story/Page.java`
+- Create: `backend/src/main/java/com/sweetbook/domain/order/Order.java`
+- Create: `backend/src/main/java/com/sweetbook/domain/order/OrderItem.java`
 
-- [ ] **Step 1:** `Story.java`
+- [ ] **Step 1:** `Story.java` (도메인 → story)
 
 ```java
-package com.sweetbook.domain;
+package com.sweetbook.domain.story;
 
 import jakarta.persistence.*;
 import java.time.Instant;
@@ -881,10 +913,10 @@ public class Story {
 }
 ```
 
-- [ ] **Step 2:** `Page.java`
+- [ ] **Step 2:** `Page.java` (도메인 → story)
 
 ```java
-package com.sweetbook.domain;
+package com.sweetbook.domain.story;
 
 import jakarta.persistence.*;
 import java.util.UUID;
@@ -923,11 +955,12 @@ public class Page {
 }
 ```
 
-- [ ] **Step 3:** `Order.java`
+- [ ] **Step 3:** `Order.java` (도메인 → order, Story 임포트 필요)
 
 ```java
-package com.sweetbook.domain;
+package com.sweetbook.domain.order;
 
+import com.sweetbook.domain.story.Story;
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.*;
@@ -987,10 +1020,10 @@ public class Order {
 }
 ```
 
-- [ ] **Step 4:** `OrderItem.java`
+- [ ] **Step 4:** `OrderItem.java` (도메인 → order)
 
 ```java
-package com.sweetbook.domain;
+package com.sweetbook.domain.order;
 
 import jakarta.persistence.*;
 import java.util.UUID;
