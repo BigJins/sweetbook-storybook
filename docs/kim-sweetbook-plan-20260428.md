@@ -4990,7 +4990,9 @@ git push
 - (3) ZIP 파일 수 19 vs 14 불일치 → 14로 통일 + 테스트에 `assertEquals(14, entries.size())` 박음.
 - (4) E2E 테스트가 시드만 검증 → `OrderFlowSmokeTest`(이름 정정) + `StoryCreateSmokeTest`(멀티파트 + 비동기 generation 회귀 보호) 분리.
 
-이슈 없음. 30시간 안에 끝나는 사이즈로 정렬됨.
+**현재 상태**: 실사용 가능 수준. 30시간 안에 끝나는 사이즈로 정렬됨.
+
+이 문서는 여러 라운드 보강을 거친 결과물이라(보강 이력 4건은 위 참조), 현 시점에 알려진 모순은 모두 해소된 상태. 다만 "절대 무결"은 아니고, 남는 작업은 주로 메타 정리 — 사본 동기화(`docs/` ↔ `.gstack`), 새로운 결정 발생 시 truth source(repo `docs/`) 갱신 후 사본 복사, self-review 후속 라운드. 구현 중 발견되는 디테일 이슈는 plan을 수정하지 말고 commit message·README "더 시간이 있었다면" 섹션에 기록.
 
 ---
 
