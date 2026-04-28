@@ -1,6 +1,8 @@
 # Frontend UI Agent — Dispatch Prompt
 
 > 이 파일은 `feature/frontend-ui` 워크트리에 dispatch되는 에이전트의 운영 지침. 공통 규칙은 `CLAUDE.md`·`AGENTS.md`, 구현 정의는 `docs/kim-sweetbook-plan-20260428.md`를 따른다.
+>
+> **권장 모델 등급**: 빠른(예: Sonnet 등급) — Vue 컴포넌트·라우터·폼 검증은 plan에 코드 샘플까지 있어 반복 구현에 적합. useStoryStatus 폴링 hook·SPA 상태 관리에서 막히면 상위 모델로 승격. 모델 선택 원칙은 `CLAUDE.md` 참고.
 
 ---
 

@@ -1,6 +1,8 @@
 # Main / Reviewer Agent — Dispatch Prompt
 
 > 이 파일은 `main` 워크트리에서 동작하는 메인/리뷰어 에이전트의 운영 지침. 공통 규칙은 `CLAUDE.md`·`AGENTS.md`, 구현 정의는 `docs/kim-sweetbook-plan-20260428.md`를 따른다.
+>
+> **권장 모델 등급**: 상위(예: Opus 등급) — 리서치·머지 리뷰·통합 결정·plan 갱신은 깊은 추론이 필요. 단순 머지·smoke 검증 같은 반복 작업은 빠른 모델로 강등 가능. 모델 선택 원칙은 `CLAUDE.md` "모델 선택 원칙" 참고.
 
 ---
 

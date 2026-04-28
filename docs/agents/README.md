@@ -2,11 +2,13 @@
 
 세 역할(main/reviewer · backend-ai · frontend-ui)에 dispatch할 때 그대로 복사해 쓸 수 있는 운영 지침.
 
-| 파일 | 역할 | 워크트리 |
-|------|------|----------|
-| [`main-reviewer.md`](main-reviewer.md) | 베이스라인 유지 + feature 머지 + 주문/ZIP/Docker/README | `main` (`C:/dev/sweetbook-storybook`) |
-| [`backend-ai.md`](backend-ai.md) | Story REST + AI 통합 + 비동기 generation | `feature/backend-ai` (`.worktrees/backend-ai`) |
-| [`frontend-ui.md`](frontend-ui.md) | Vue 라우터·뷰·컴포넌트·폴링·주문 모달·칸반 UI | `feature/frontend-ui` (`.worktrees/frontend-ui`) |
+| 파일 | 역할 | 워크트리 | 권장 모델 등급 |
+|------|------|----------|----------------|
+| [`main-reviewer.md`](main-reviewer.md) | 베이스라인 유지 + feature 머지 + 주문/ZIP/Docker/README | `main` (`C:/dev/sweetbook-storybook`) | 상위 (Opus 등급) |
+| [`backend-ai.md`](backend-ai.md) | Story REST + AI 통합 + 비동기 generation | `feature/backend-ai` (`.worktrees/backend-ai`) | 빠른 (Sonnet 등급) |
+| [`frontend-ui.md`](frontend-ui.md) | Vue 라우터·뷰·컴포넌트·폴링·주문 모달·칸반 UI | `feature/frontend-ui` (`.worktrees/frontend-ui`) | 빠른 (Sonnet 등급) |
+
+> 모델 등급 선택 원칙은 `CLAUDE.md`의 "모델 선택 원칙" 섹션 참고. 두 번 막히면 상위로 승격, 결정 끝나면 빠른 모델로 강등이 기본.
 
 ## 사용법
 

@@ -1,6 +1,8 @@
 # Backend AI Agent — Dispatch Prompt
 
 > 이 파일은 `feature/backend-ai` 워크트리에 dispatch되는 에이전트의 운영 지침. 공통 규칙은 `CLAUDE.md`·`AGENTS.md`, 구현 정의는 `docs/kim-sweetbook-plan-20260428.md`를 따른다.
+>
+> **권장 모델 등급**: 빠른(예: Sonnet 등급) — plan에 task·DTO·코드 샘플이 박혀 있어 명세 기반 구현 반복에 적합. AI 호출 디버깅·예외 시나리오 같은 어려운 지점에서 두 번 이상 막히면 상위 모델로 승격. 모델 선택 원칙은 `CLAUDE.md` 참고.
 
 ---
 
