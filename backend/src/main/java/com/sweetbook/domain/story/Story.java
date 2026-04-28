@@ -1,13 +1,19 @@
 package com.sweetbook.domain.story;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -19,7 +25,7 @@ public class Story {
     private String id;
 
     @Column(nullable = false, length = 120)
-    private String title;
+    private String title = "";
 
     @Column(name = "child_name", nullable = false, length = 20)
     private String childName;
@@ -46,6 +52,10 @@ public class Story {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @OneToMany(mappedBy = "story", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OrderBy("pageNumber ASC")
+    private List<Page> pages = new ArrayList<>();
+
     protected Story() {
     }
 
@@ -70,12 +80,26 @@ public class Story {
         this.updatedAt = Instant.now();
     }
 
+    public void markFailed(String message) {
+        this.errorMessage = message;
+        transitionTo(StoryStatus.FAILED);
+    }
+
+    public void retry() {
+        this.errorMessage = null;
+        transitionTo(StoryStatus.ANALYZING_DRAWING);
+    }
+
     public String getId() {
         return id;
     }
 
     public String getTitle() {
         return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getChildName() {
@@ -94,8 +118,16 @@ public class Story {
         return drawingUrl;
     }
 
+    public void setDrawingUrl(String drawingUrl) {
+        this.drawingUrl = drawingUrl;
+    }
+
     public String getStyleDescriptorJson() {
         return styleDescriptorJson;
+    }
+
+    public void setStyleDescriptorJson(String styleDescriptorJson) {
+        this.styleDescriptorJson = styleDescriptorJson;
     }
 
     public String getImaginationPrompt() {
@@ -108,5 +140,9 @@ public class Story {
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    public List<Page> getPages() {
+        return pages;
     }
 }

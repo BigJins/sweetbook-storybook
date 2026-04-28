@@ -67,4 +67,28 @@ public class Page {
     public PageLayout getLayout() {
         return layout;
     }
+
+    public String getBodyText() {
+        return bodyText;
+    }
+
+    public void setBodyText(String bodyText) {
+        this.bodyText = bodyText;
+    }
+
+    public String getIllustrationPrompt() {
+        return illustrationPrompt;
+    }
+
+    public void setIllustrationPrompt(String illustrationPrompt) {
+        this.illustrationPrompt = illustrationPrompt;
+    }
+
+    public String getIllustrationUrl() {
+        return illustrationUrl;
+    }
+
+    public void setIllustrationUrl(String illustrationUrl) {
+        this.illustrationUrl = illustrationUrl;
+    }
 }
