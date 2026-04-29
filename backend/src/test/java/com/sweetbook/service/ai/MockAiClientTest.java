@@ -1,11 +1,11 @@
 package com.sweetbook.service.ai;
 
+import com.sweetbook.domain.story.PageLayout;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -15,109 +15,107 @@ class MockAiClientTest {
     private final MockAiClient ai = new MockAiClient();
 
     @Test
-    void analyzeDrawingPopulatesAllFields() {
+    void analyzeDrawingReturnsUsableFallbackStyle() {
         StyleDescriptor d = ai.analyzeDrawing(new byte[]{1, 2}, "image/png");
 
-        assertNotNull(d.subject(), "subject should not be null");
-        assertNotNull(d.subjectType(), "subjectType should not be null");
-        assertNotNull(d.mood(), "mood should not be null");
-        assertFalse(d.keywords().isEmpty(), "keywords should not be empty");
-        assertFalse(d.sceneCues().isEmpty(), "sceneCues should not be empty");
+        assertNotNull(d.subject());
+        assertNotNull(d.subjectType());
+        assertNotNull(d.mood());
+        assertTrue(d.keywords().size() >= 3);
+        assertTrue(d.sceneCues().size() >= 2);
     }
 
     @Test
-    void coverPageHasNullBodyAndDescribesSubject() {
-        StyleDescriptor style = new StyleDescriptor(
-            List.of("수채화풍"), "갈색 강아지", "ANIMAL", "따뜻한", List.of("공원"));
-        StoryDraft draft = ai.generateStory("서아", "공원에서 함께 놀았어", style);
+    void princessPromptSelectsPrincessPreset() {
+        StoryDraft draft = ai.generateStory(
+            "서아",
+            "공주님과 왕자님이 만나 행복하게 사는 이야기",
+            StyleDescriptor.empty()
+        );
 
-        StoryDraft.PageDraft cover = draft.pages().get(0);
-        assertEquals(1, cover.pageNumber());
-        assertNull(cover.bodyText(), "cover bodyText must be null per plan");
-        assertTrue(cover.illustrationPrompt().contains("갈색 강아지"),
-            "cover illustration should mention subject: " + cover.illustrationPrompt());
+        assertEquals("서아의 행복한 왕국", draft.title());
+        assertNull(draft.pages().get(0).bodyText());
+        assertTrue(draft.pages().get(1).bodyText().contains("공주"));
     }
 
     @Test
-    void subjectAppearsInMostPagesNotChildName() {
-        StyleDescriptor style = new StyleDescriptor(
-            List.of("수채화풍"), "갈색 강아지", "ANIMAL", "따뜻한", List.of("공원", "꽃"));
-        StoryDraft draft = ai.generateStory("서아", "공원에서 뛰어놀았어", style);
+    void bearPromptSelectsBearPreset() {
+        StoryDraft draft = ai.generateStory(
+            "서아",
+            "곰돌이가 별을 따러 가는 여행 이야기",
+            StyleDescriptor.empty()
+        );
 
-        long pagesMentioningSubject = draft.pages().stream()
-            .filter(p -> p.illustrationPrompt() != null && p.illustrationPrompt().contains("갈색 강아지"))
-            .count();
-        assertTrue(pagesMentioningSubject >= 4,
-            "subject should drive every page's illustration; got " + pagesMentioningSubject);
+        assertEquals("곰돌이의 별 따러 가는 여행", draft.title());
+        assertTrue(draft.pages().get(2).illustrationPrompt().contains("곰돌이"));
     }
 
     @Test
-    void childNameIsIntegratedNaturallyNotForcedOnEveryPage() {
-        StyleDescriptor style = new StyleDescriptor(
-            List.of("수채화풍"), "갈색 강아지", "ANIMAL", "따뜻한", List.of("공원"));
-        StoryDraft draft = ai.generateStory("서아", "함께 놀았어요", style);
+    void dogPromptSelectsTaniPresetAndReplacesChildName() {
+        StoryDraft draft = ai.generateStory(
+            "민지",
+            "강아지 탄이가 낮잠을 많이 자는 이유가 궁금한 이야기",
+            StyleDescriptor.empty()
+        );
 
-        long bodyPagesMentioningChild = draft.pages().stream()
-            .filter(p -> p.bodyText() != null)
-            .filter(p -> p.bodyText().contains("서아"))
-            .count();
-        long bodyPages = draft.pages().stream()
-            .filter(p -> p.bodyText() != null)
-            .count();
-
-        assertTrue(bodyPagesMentioningChild >= 1,
-            "child name should appear at least once across body pages");
-        assertTrue(bodyPagesMentioningChild < bodyPages,
-            "child name should not be on every body page (forced); got "
-                + bodyPagesMentioningChild + "/" + bodyPages);
+        assertEquals("탄이의 낮잠 이야기", draft.title());
+        assertTrue(draft.pages().get(1).bodyText().contains("민지"));
+        assertTrue(draft.pages().get(4).bodyText().contains("민지"));
     }
 
     @Test
-    void titleReflectsSubjectNotChild() {
-        StyleDescriptor style = new StyleDescriptor(
-            List.of("수채화풍"), "갈색 강아지", "ANIMAL", "따뜻한", List.of("공원"));
-        StoryDraft draft = ai.generateStory("서아", "공원", style);
+    void generateIllustrationReturnsPresetImageBytesPerPage() {
+        ai.generateStory("서아", "공주와 왕자의 이야기", StyleDescriptor.empty());
 
-        assertTrue(draft.title().contains("갈색 강아지"),
-            "title should reference subject: " + draft.title());
-        assertFalse(draft.title().contains("서아"),
-            "title should not foreground child name in mock template: " + draft.title());
+        byte[] cover = ai.generateIllustration("표지", StyleDescriptor.empty(), PageLayout.COVER, 1);
+        byte[] page2 = ai.generateIllustration("본문", StyleDescriptor.empty(), PageLayout.SPLIT, 2);
+
+        assertTrue(cover.length > 1000);
+        assertTrue(page2.length > 1000);
+        assertTrue(cover.length != page2.length);
     }
 
     @Test
-    void usesSubjectFallbackWhenAnalysisIsEmpty() {
-        StoryDraft draft = ai.generateStory("서아", "어떤 모험", StyleDescriptor.empty());
-
-        StoryDraft.PageDraft cover = draft.pages().get(0);
-        assertTrue(cover.illustrationPrompt().contains("그림 속 주인공"),
-            "should fall back to '그림 속 주인공' when subject missing: "
-                + cover.illustrationPrompt());
-    }
-
-    @Test
-    void bodyPagesHaveTwoToFourSentences() {
-        StyleDescriptor style = new StyleDescriptor(
-            List.of("수채화풍"), "갈색 강아지", "ANIMAL", "따뜻한", List.of("공원"));
-        StoryDraft draft = ai.generateStory("서아", "공원에서 함께 놀았어요", style);
+    void bodyPagesStayWithinTwoToFourSentences() {
+        StoryDraft draft = ai.generateStory(
+            "서아",
+            "공주님과 왕자님이 행복하게 사는 이야기",
+            StyleDescriptor.empty()
+        );
 
         for (int n = 2; n <= 4; n++) {
-            StoryDraft.PageDraft page = draft.pages().get(n - 1);
-            long sentenceCount = countSentences(page.bodyText());
-            assertTrue(sentenceCount >= 2 && sentenceCount <= 4,
-                "page " + n + " should have 2-4 sentences, got " + sentenceCount
-                    + " in: " + page.bodyText());
+            long sentenceCount = countSentences(draft.pages().get(n - 1).bodyText());
+            assertTrue(sentenceCount >= 2 && sentenceCount <= 4);
         }
     }
 
     @Test
-    void endingPageHasOneOrTwoSentences() {
-        StyleDescriptor style = new StyleDescriptor(
-            List.of("수채화풍"), "갈색 강아지", "ANIMAL", "따뜻한", List.of("공원"));
-        StoryDraft draft = ai.generateStory("서아", "공원에서", style);
+    void endingPageUsesOneOrTwoSentences() {
+        StoryDraft draft = ai.generateStory(
+            "서아",
+            "곰돌이가 별을 따러 가는 여행 이야기",
+            StyleDescriptor.empty()
+        );
 
         long sentenceCount = countSentences(draft.pages().get(4).bodyText());
-        assertTrue(sentenceCount >= 1 && sentenceCount <= 2,
-            "ending should have 1-2 sentences, got " + sentenceCount);
+        assertTrue(sentenceCount >= 1 && sentenceCount <= 2);
+    }
+
+    @Test
+    void styleCanStillGuideFallbackSelection() {
+        StoryDraft draft = ai.generateStory(
+            "서아",
+            "",
+            new StyleDescriptor(
+                List.of("동화풍"),
+                "갈색 곰",
+                "ANIMAL",
+                "따뜻한",
+                List.of("숲", "별")
+            )
+        );
+
+        assertEquals("곰돌이의 별 따러 가는 여행", draft.title());
     }
 
     private long countSentences(String text) {

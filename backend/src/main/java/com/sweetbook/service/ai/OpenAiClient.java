@@ -135,7 +135,7 @@ public class OpenAiClient implements AiClient {
     }
 
     @Override
-    public byte[] generateIllustration(String prompt, StyleDescriptor style, PageLayout layout) {
+    public byte[] generateIllustration(String prompt, StyleDescriptor style, PageLayout layout, int pageNumber) {
         String fullPrompt = buildIllustrationPrompt(prompt, style, layout);
 
         Map<String, Object> body = Map.of(

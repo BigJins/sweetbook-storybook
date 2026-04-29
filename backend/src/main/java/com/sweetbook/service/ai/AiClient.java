@@ -8,5 +8,5 @@ public interface AiClient {
 
     StoryDraft generateStory(String childName, String imaginationPrompt, StyleDescriptor style);
 
-    byte[] generateIllustration(String prompt, StyleDescriptor style, PageLayout layout);
+    byte[] generateIllustration(String prompt, StyleDescriptor style, PageLayout layout, int pageNumber);
 }

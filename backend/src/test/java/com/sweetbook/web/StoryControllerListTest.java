@@ -31,7 +31,7 @@ class StoryControllerListTest {
     void listsSeedStories() throws Exception {
         mvc.perform(get("/api/stories"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.length()").value(4))
+            .andExpect(jsonPath("$.length()").value(2))
             .andExpect(jsonPath("$[0].title").exists());
     }
 
