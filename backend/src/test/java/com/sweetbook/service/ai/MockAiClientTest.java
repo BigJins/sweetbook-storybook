@@ -26,46 +26,65 @@ class MockAiClientTest {
     }
 
     @Test
-    void princessPromptSelectsPrincessPreset() {
+    void princessPromptSelectsDedicatedMockPreset() {
         StoryDraft draft = ai.generateStory(
             "서아",
             "공주님과 왕자님이 만나 행복하게 사는 이야기",
             StyleDescriptor.empty()
         );
 
-        assertEquals("서아의 행복한 왕국", draft.title());
+        assertEquals("별빛 왕관의 하루", draft.title());
         assertNull(draft.pages().get(0).bodyText());
         assertTrue(draft.pages().get(1).bodyText().contains("공주"));
+        assertFalseContains(draft.pages().get(1).bodyText(), "서아");
+        assertFalseContains(draft.title(), "서아의 행복한 왕국");
     }
 
     @Test
-    void bearPromptSelectsBearPreset() {
+    void bearPromptSelectsDedicatedMockPreset() {
         StoryDraft draft = ai.generateStory(
-            "서아",
+            "민지",
             "곰돌이가 별을 따러 가는 여행 이야기",
             StyleDescriptor.empty()
         );
 
-        assertEquals("곰돌이의 별 따러 가는 여행", draft.title());
+        assertEquals("곰돌이와 별빛 산책", draft.title());
         assertTrue(draft.pages().get(2).illustrationPrompt().contains("곰돌이"));
+        assertFalseContains(draft.title(), "곰돌이의 별 따러 가는 여행");
     }
 
     @Test
-    void dogPromptSelectsTaniPresetAndReplacesChildName() {
+    void dogPromptSelectsDedicatedMockPreset() {
         StoryDraft draft = ai.generateStory(
-            "민지",
-            "강아지 탄이가 낮잠을 많이 자는 이유가 궁금한 이야기",
+            "탄이",
+            "강아지가 낮잠을 자며 꿈을 꾸는 이야기",
             StyleDescriptor.empty()
         );
 
-        assertEquals("탄이의 낮잠 이야기", draft.title());
-        assertTrue(draft.pages().get(1).bodyText().contains("민지"));
-        assertTrue(draft.pages().get(4).bodyText().contains("민지"));
+        assertEquals("검은 강아지의 포근한 꿈", draft.title());
+        assertTrue(draft.pages().get(1).bodyText().contains("강아지"));
+        assertFalseContains(draft.title(), "탄이의 낮잠 이야기");
+    }
+
+    @Test
+    void childNameDoesNotLeakIntoFixedMockStory() {
+        StoryDraft draft = ai.generateStory(
+            "아무개",
+            "공주님과 왕국 이야기",
+            StyleDescriptor.empty()
+        );
+
+        for (int i = 1; i < draft.pages().size(); i++) {
+            String body = draft.pages().get(i).bodyText();
+            if (body != null) {
+                assertFalseContains(body, "아무개");
+            }
+        }
     }
 
     @Test
     void generateIllustrationReturnsPresetImageBytesPerPage() {
-        ai.generateStory("서아", "공주와 왕자의 이야기", StyleDescriptor.empty());
+        ai.generateStory("서아", "공주와 왕자 이야기", StyleDescriptor.empty());
 
         byte[] cover = ai.generateIllustration("표지", StyleDescriptor.empty(), PageLayout.COVER, 1);
         byte[] page2 = ai.generateIllustration("본문", StyleDescriptor.empty(), PageLayout.SPLIT, 2);
@@ -93,7 +112,7 @@ class MockAiClientTest {
     void endingPageUsesOneOrTwoSentences() {
         StoryDraft draft = ai.generateStory(
             "서아",
-            "곰돌이가 별을 따러 가는 여행 이야기",
+            "곰돌이가 별을 보며 산책하는 이야기",
             StyleDescriptor.empty()
         );
 
@@ -110,15 +129,19 @@ class MockAiClientTest {
                 List.of("동화풍"),
                 "갈색 곰",
                 "ANIMAL",
-                "따뜻한",
+                "포근한",
                 List.of("숲", "별")
             )
         );
 
-        assertEquals("곰돌이의 별 따러 가는 여행", draft.title());
+        assertEquals("곰돌이와 별빛 산책", draft.title());
     }
 
     private long countSentences(String text) {
         return text.chars().filter(c -> c == '.' || c == '!' || c == '?').count();
+    }
+
+    private void assertFalseContains(String text, String unexpected) {
+        assertTrue(text == null || !text.contains(unexpected));
     }
 }

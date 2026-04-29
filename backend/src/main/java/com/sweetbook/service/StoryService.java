@@ -1,5 +1,6 @@
 package com.sweetbook.service;
 
+import com.sweetbook.config.MockDemoStoryConfig;
 import com.sweetbook.domain.story.Page;
 import com.sweetbook.domain.story.Story;
 import com.sweetbook.repository.PageRepository;
@@ -8,6 +9,7 @@ import com.sweetbook.web.dto.PageDto;
 import com.sweetbook.web.dto.StoryCreateRequest;
 import com.sweetbook.web.dto.StoryDto;
 import com.sweetbook.web.dto.StorySummaryDto;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,19 +26,31 @@ public class StoryService {
     private final PageRepository pages;
     private final FileStorageService storage;
     private final StoryGenerationService generationService;
+    private final MockDemoStoryConfig demoStory;
+    private final boolean mockMode;
 
     public StoryService(StoryRepository stories,
                         PageRepository pages,
                         FileStorageService storage,
-                        StoryGenerationService generationService) {
+                        StoryGenerationService generationService,
+                        MockDemoStoryConfig demoStory,
+                        @Value("${app.ai.mock-mode:true}") boolean mockMode) {
         this.stories = stories;
         this.pages = pages;
         this.storage = storage;
         this.generationService = generationService;
+        this.demoStory = demoStory;
+        this.mockMode = mockMode;
     }
 
     @Transactional
     public Story create(StoryCreateRequest req, MultipartFile drawing) throws IOException {
+        if (mockMode) {
+            String drawingPath = storage.saveDrawingBytes(demoStory.drawingBytes(), "image/png");
+            Story s = Story.newDraft(demoStory.childName(), demoStory.imaginationPrompt());
+            s.setDrawingUrl(drawingPath);
+            return stories.save(s);
+        }
         if (drawing == null || drawing.isEmpty()) {
             throw new IllegalArgumentException("DRAWING_REQUIRED");
         }
@@ -60,6 +74,7 @@ public class StoryService {
 
     public List<StorySummaryDto> list() {
         return stories.findAllByOrderByCreatedAtDesc().stream()
+            .filter(s -> !mockMode || s.getId().startsWith("seed-story-"))
             .map(s -> {
                 String coverUrl = s.getPages().stream()
                     .filter(p -> p.getPageNumber() == 1)

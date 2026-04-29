@@ -18,10 +18,10 @@ public class MockAiClient implements AiClient {
     public StyleDescriptor analyzeDrawing(byte[] bytes, String contentType) {
         sleep(600);
         return new StyleDescriptor(
-            List.of("아이 그림", "다채로운 색감", "그림책 스타일", "따뜻한 분위기"),
+            List.of("아이 그림", "다채로운 색감", "동화책 스타일", "밝은 분위기"),
             "그림 속 주인공",
             "PERSON",
-            "포근한",
+            "따뜻한",
             List.of("하늘", "꽃", "친구")
         );
     }
@@ -31,7 +31,7 @@ public class MockAiClient implements AiClient {
         sleep(600);
         MockPreset preset = MockPreset.pick(imaginationPrompt, style);
         ACTIVE_PRESET.set(preset);
-        return preset.toDraft(childName);
+        return preset.toDraft();
     }
 
     @Override
@@ -58,78 +58,78 @@ public class MockAiClient implements AiClient {
 
     enum MockPreset {
         PRINCESS(
-            "princess",
+            "mock/presets/princess",
             new StyleDescriptor(
-                List.of("어린이 그림", "다채로운 색상", "굵은 외곽선", "활기찬"),
+                List.of("어린이 그림", "다채로운 색상", "공주 의상선", "활기찬"),
                 "왕관을 쓴 공주",
                 "PERSON",
                 "행복한",
-                List.of("왕관", "드레스", "꽃", "궁전")
+                List.of("왕관", "드레스", "꽃", "왕국")
             ),
-            "서아의 행복한 왕국",
+            "별빛 왕관의 하루",
             Arrays.asList(
                 null,
-                "어느 날, {{childName}}는 자신이 공주인 꿈을 꾸었어요. 왕자님이 나타나서 \"{{childName}} 공주님, 함께 놀아요!\"라고 말했어요.",
-                "두 친구는 성의 정원에서 숨바꼭질을 했어요. \"딱! 왕자님이 저기 숨어 있네!\" {{childName}}가 환하게 웃었어요.",
-                "{{childName}}와 왕자님은 정원 한가운데서 둥실둥실 춤을 췄어요. 꽃들도 함께 흔들리며 두 친구를 축하해 주는 것 같았어요.",
-                "{{childName}}는 눈을 감고 미소 지었어요. 공주님과 왕자님은 앞으로도 오래오래 행복할 거라고 믿었답니다."
+                "반짝이는 왕관을 쓴 공주가 꽃밭 한가운데 서 있었어요. 작은 바람이 드레스를 살랑이며 오늘의 모험을 불러 주었답니다.",
+                "공주는 알록달록한 정원을 걸으며 새로운 친구들을 만났어요. 모두 함께 웃자 햇살도 더 밝게 반짝였어요.",
+                "조금 멀리 걷자 커다란 성문이 나타났어요. 공주는 두근두근한 마음으로 손을 흔들며 용감하게 앞으로 나아갔답니다.",
+                "마지막으로 공주는 환하게 웃으며 하늘을 올려다보았어요. 오늘 하루가 오래도록 반짝이는 추억이 되었답니다."
             ),
             List.of(
-                "왕관을 쓴 아이 공주가 밝게 웃고 있는 표지 장면.",
-                "공주와 왕자님이 정원에서 처음 만나는 장면.",
-                "공주와 왕자님이 성의 정원에서 숨바꼭질하는 장면.",
-                "공주와 왕자님이 꽃밭에서 함께 춤추는 장면.",
-                "공주가 행복한 꿈의 여운 속에서 미소 짓는 엔딩 장면."
+                "왕관을 쓴 공주가 꽃밭과 푸른 하늘 앞에 서 있는 표지 장면.",
+                "공주가 꽃이 가득한 정원에서 밝게 웃는 장면.",
+                "공주가 친구들과 함께 정원을 걸어가는 장면.",
+                "공주가 성문 앞에서 용감하게 손을 흔드는 장면.",
+                "공주가 따뜻한 빛 아래에서 만족스럽게 미소 짓는 마무리 장면."
             )
         ),
         BEAR(
-            "bear",
+            "mock/presets/bear",
             new StyleDescriptor(
-                List.of("생동감 있는", "자연주의", "부드러운 느낌"),
-                "갈색 곰",
-                "ANIMAL",
-                "따뜻한",
-                List.of("풀밭", "들꽃", "숲", "별")
-            ),
-            "곰돌이의 별 따러 가는 여행",
-            Arrays.asList(
-                null,
-                "어느 날, 곰돌이는 밤하늘의 별을 보고 말했어요. \"저 별들을 따러 가고 싶어!\" 생각하며 숲 속으로 나섰어요.",
-                "숲 속에서 다양한 친구들을 만났어요. 토끼가 말했어요. \"같이 가줄게!\" 곰돌이는 기뻐하며 답했어요. \"고마워! 함께 가자!\"",
-                "드디어 높은 언덕에 도착했어요. 곰돌이는 손을 쭉 뻗어 별을 잡으려 했어요. \"와! 너무 아름다워!\" 친구들도 신기하게 바라봤어요.",
-                "그날 밤, 곰돌이는 별빛 속에서 행복한 꿈을 꾸었어요. 별은 멀리 있었지만, 친구들과 함께라서 좋았어요."
-            ),
-            List.of(
-                "곰돌이가 별을 바라보는 표지 장면.",
-                "곰돌이가 숲길을 따라 별을 향해 떠나는 장면.",
-                "곰돌이가 친구들과 함께 숲길을 걷는 장면.",
-                "곰돌이가 높은 언덕에서 별을 향해 손을 뻗는 장면.",
-                "곰돌이가 밤하늘 아래 별빛을 바라보는 엔딩 장면."
-            )
-        ),
-        TANI(
-            "tani",
-            new StyleDescriptor(
-                List.of("사진풍", "리얼리즘", "실내", "깔끔한"),
-                "검은 포메라니안",
+                List.of("자연주의", "부드러운 질감", "노란 별빛", "포근한 밤"),
+                "미소 짓는 곰돌이",
                 "ANIMAL",
                 "포근한",
-                List.of("책상", "모니터", "사진", "침대")
+                List.of("들판", "별", "숲", "산책")
             ),
-            "탄이의 낮잠 이야기",
+            "곰돌이와 별빛 산책",
             Arrays.asList(
                 null,
-                "{{childName}}는 탄이가 낮잠을 많이 자는 것이 조금 섭섭했어요. \"왜 이렇게 자는 걸까?\" {{childName}}는 조용히 생각해 보았어요.",
-                "그때 탄이는 꿈속에서 {{childName}}를 지키고 있었어요. 작은 발걸음으로 밤새 곁을 지킨 마음이 반짝였답니다.",
-                "{{childName}}는 이제 알 것 같았어요. 탄이가 늦은 밤까지 곁을 지키느라 피곤했구나, 하고요.",
-                "탄이와 {{childName}}는 서로를 바라보며 미소 지었어요. 이제 두 친구는 서로의 마음을 더 잘 알게 되었답니다."
+                "작은 곰돌이가 들판 위에 앉아 반짝이는 별을 올려다보았어요. 오늘은 별빛을 따라 천천히 산책을 나가 보기로 했답니다.",
+                "곰돌이는 꽃길을 지나며 밤하늘의 반짝임을 하나씩 세어 보았어요. 발걸음마다 풀잎이 살짝 흔들리고 마음도 한결 가벼워졌어요.",
+                "조금 더 걷자 숲 가장자리에서 은은한 바람이 불어왔어요. 곰돌이는 커다란 하늘을 바라보며 조용히 소원을 떠올렸답니다.",
+                "집으로 돌아오는 길에도 별빛은 곰돌이를 따라와 주었어요. 포근한 밤공기 속에서 오늘의 산책은 가장 빛나는 시간이 되었답니다."
             ),
             List.of(
-                "검은 포메라니안 탄이가 포근하게 쉬는 표지 장면.",
-                "아이가 탄이를 바라보며 궁금해하는 실내 장면.",
-                "탄이가 꿈속에서 아이를 지키는 따뜻한 장면.",
-                "아이가 탄이를 꼭 안아 주는 따뜻한 장면.",
-                "아이와 탄이가 평화롭게 미소 짓는 엔딩 장면."
+                "별빛 아래에서 환하게 웃는 곰돌이의 표지 장면.",
+                "곰돌이가 들판에서 별을 바라보는 장면.",
+                "곰돌이가 꽃길과 풀숲 사이를 산책하는 장면.",
+                "곰돌이가 숲 가장자리에서 하늘을 올려다보는 장면.",
+                "곰돌이가 포근한 밤길을 따라 돌아가는 마무리 장면."
+            )
+        ),
+        DOG(
+            "mock/presets/tani",
+            new StyleDescriptor(
+                List.of("사진풍", "실내", "부드러운 조명", "포근한 분위기"),
+                "까만 강아지",
+                "ANIMAL",
+                "포근한",
+                List.of("낮잠", "침대", "방 안", "따뜻한 빛")
+            ),
+            "검은 강아지의 포근한 꿈",
+            Arrays.asList(
+                null,
+                "까만 강아지가 포근한 이불 위에 몸을 동그랗게 말고 누웠어요. 따뜻한 햇살이 방 안을 감싸며 낮잠 시간이 시작되었답니다.",
+                "강아지는 졸린 눈을 꿈뻑이며 조용히 숨을 골랐어요. 창밖의 바람 소리도 아주 부드럽게 들려왔어요.",
+                "잠이 깊어질수록 강아지의 꿈속에는 반짝이는 별빛이 번졌어요. 포근한 품처럼 따뜻한 빛이 곁을 가만히 지켜 주었답니다.",
+                "한참 뒤 강아지는 편안한 얼굴로 다시 눈을 떴어요. 잘 쉬고 난 오늘의 낮잠은 가장 다정한 꿈이 되었답니다."
+            ),
+            List.of(
+                "포근한 이불 위에서 쉬고 있는 검은 강아지의 표지 장면.",
+                "검은 강아지가 침대 위에서 눈을 반쯤 감고 쉬는 장면.",
+                "검은 강아지가 조용한 방 안에서 낮잠에 빠져드는 장면.",
+                "검은 강아지가 별빛 같은 꿈속 분위기 속에 있는 장면.",
+                "검은 강아지가 낮잠에서 깨어나 편안하게 미소 짓는 마무리 장면."
             )
         );
 
@@ -151,39 +151,29 @@ public class MockAiClient implements AiClient {
             this.illustrationPrompts = illustrationPrompts;
         }
 
-        StoryDraft toDraft(String childName) {
-            return new StoryDraft(replaceChildName(title, childName), List.of(
-                page(1, null),
-                page(2, childName),
-                page(3, childName),
-                page(4, childName),
-                page(5, childName)
+        StoryDraft toDraft() {
+            return new StoryDraft(title, List.of(
+                page(1),
+                page(2),
+                page(3),
+                page(4),
+                page(5)
             ));
         }
 
-        private StoryDraft.PageDraft page(int pageNumber, String childName) {
-            String body = bodyTexts.get(pageNumber - 1);
-            String prompt = illustrationPrompts.get(pageNumber - 1);
+        private StoryDraft.PageDraft page(int pageNumber) {
             return new StoryDraft.PageDraft(
                 pageNumber,
-                body == null ? null : replaceChildName(body, childName),
-                replaceChildName(prompt, childName)
+                bodyTexts.get(pageNumber - 1),
+                illustrationPrompts.get(pageNumber - 1)
             );
         }
 
         String resourceFor(int pageNumber) {
             if (pageNumber <= 1) {
-                return resourceDirPrefix() + "/cover.png";
+                return resourceDir + "/cover.png";
             }
-            return resourceDirPrefix() + "/page-" + pageNumber + ".png";
-        }
-
-        private String resourceDirPrefix() {
-            return switch (this) {
-                case PRINCESS -> "mock/presets/princess";
-                case BEAR -> "seed/story-1";
-                case TANI -> "seed/story-4";
-            };
+            return resourceDir + "/page-" + pageNumber + ".png";
         }
 
         static MockPreset pick(String text, StyleDescriptor style) {
@@ -205,13 +195,13 @@ public class MockAiClient implements AiClient {
             if (containsAny(normalized, "곰", "별", "숲", "토끼")) {
                 return BEAR;
             }
-            if (containsAny(normalized, "강아지", "탄이", "낮잠", "포메")) {
-                return TANI;
+            if (containsAny(normalized, "강아지", "낮잠", "포메", "검은")) {
+                return DOG;
             }
             if ("PERSON".equals(style.subjectType())) {
                 return PRINCESS;
             }
-            return TANI;
+            return DOG;
         }
 
         private static boolean containsAny(String text, String... tokens) {
@@ -225,16 +215,6 @@ public class MockAiClient implements AiClient {
 
         private static String normalize(String s) {
             return s == null ? "" : s.toLowerCase(Locale.ROOT);
-        }
-
-        private static String replaceChildName(String text, String childName) {
-            if (text == null) {
-                return null;
-            }
-            if (childName == null) {
-                return text;
-            }
-            return text.replace("{{childName}}", childName);
         }
     }
 }

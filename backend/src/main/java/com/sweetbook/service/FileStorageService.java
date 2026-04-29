@@ -34,11 +34,18 @@ public class FileStorageService {
         if (contentType == null || !ALLOWED_TYPES.contains(contentType)) {
             throw new IllegalArgumentException("UNSUPPORTED_IMAGE_TYPE");
         }
+        return saveDrawingBytes(file.getBytes(), contentType);
+    }
+
+    public String saveDrawingBytes(byte[] bytes, String contentType) throws IOException {
+        if (contentType == null || !ALLOWED_TYPES.contains(contentType)) {
+            throw new IllegalArgumentException("UNSUPPORTED_IMAGE_TYPE");
+        }
         String ext = contentType.equals("image/png") ? ".png" : ".jpg";
         String name = UUID.randomUUID() + ext;
         String rel = "drawings/" + name;
         Path target = root.resolve(rel);
-        Files.write(target, file.getBytes());
+        Files.write(target, bytes);
         return rel;
     }
 

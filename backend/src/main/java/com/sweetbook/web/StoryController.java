@@ -48,7 +48,7 @@ public class StoryController {
     @PostMapping
     public Map<String, String> create(
         @Valid @ModelAttribute StoryCreateRequest req,
-        @RequestParam("drawing") MultipartFile drawing
+        @RequestParam(value = "drawing", required = false) MultipartFile drawing
     ) throws IOException {
         Story s = storyService.create(req, drawing);
         storyService.kickOffAsyncGeneration(s.getId());
